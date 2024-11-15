@@ -1,6 +1,7 @@
-import {CssBaseline} from "@mui/material";
+import {CssBaseline, ThemeProvider} from "@mui/material";
 import ReactDOM from "react-dom/client";
 import Layout from "./components/Layout";
+import {theme} from "./styles";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -10,7 +11,9 @@ const App = () => {
   return (
     <>
       <CssBaseline />
-      <Layout />
+      <ThemeProvider theme={theme}>
+        <Layout />
+      </ThemeProvider>
     </>
   );
 };
