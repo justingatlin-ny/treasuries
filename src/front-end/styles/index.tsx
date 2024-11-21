@@ -17,7 +17,13 @@ export const BondDisplayContainer = styled(Grid2, {
 }));
 
 export const AssetDurationContainer = styled(Grid2)(({theme}) => ({
-  "&.past .MuiPaper-root": {
+  "&.auctionIsPassed .MuiPaper-root .auction": {
+    color: theme.status.past,
+  },
+  "&.maturityIsPassed .MuiPaper-root .maturity": {
+    color: theme.status.past,
+  },
+  "&.issueIsPassed .MuiPaper-root .issue": {
     color: theme.status.past,
   },
 }));

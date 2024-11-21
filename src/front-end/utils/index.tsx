@@ -1,55 +1,22 @@
-import {Dayjs} from "dayjs";
-import {AssetDurationProps, BondActionDatesType, BondInfoType} from "../types";
-
-// export const actionDatesMap = {
-//   // add maturity days;
-//   ["4-week"]: [28, 5, 4],
-//   ["42-day"]: [42, 2, 2],
-//   ["8-week"]: [56, 5, 4],
-//   ["13-week"]: [91, 2, 1],
-//   ["17-week"]: [119, 6, 3],
-// };
-
-export const bondData = {
-  "4-week": {
-    maturity: 28,
-    issue: 5,
-    auctionDay: 4,
-  },
-  "42-day": {
-    maturity: 42,
-    issue: 2,
-    auctionDay: 2,
-  },
-  "8-week": {
-    maturity: 56,
-    issue: 5,
-    auctionDay: 4,
-  },
-  "13-week": {
-    maturity: 91,
-    issue: 2,
-    auctionDay: 1,
-  },
-  "17-week": {
-    maturity: 119,
-    issue: 6,
-    auctionDay: 3,
-  },
-};
+import dayjs, {Dayjs} from "dayjs";
+import {
+  AssetDurationTypes,
+  BondActionDatesType,
+  bondData,
+  BondDataType,
+  BondInfoType,
+  DateType,
+} from "../types";
 
 const getIssueDates = (selectedDate: Dayjs) => {
   return Object.entries(bondData).reduce(
     (
       acc,
-      [key, {maturity: maturityInDays, issue: daysToIssue, auctionDay}]: [
-        keyof typeof bondData,
-        BondInfoType,
-      ]
+      [key, {maturity: maturityInDays, issue: daysToIssue, auctionDay}]
     ) => {
       let adjustedAuctionDate = selectedDate.subtract(daysToIssue, "days");
       while (adjustedAuctionDate.day() !== auctionDay) {
-        adjustedAuctionDate = adjustedAuctionDate.add(1, "day");
+        adjustedAuctionDate = adjustedAuctionDate.subtract(1, "day");
       }
 
       const actionDates = {
@@ -58,25 +25,24 @@ const getIssueDates = (selectedDate: Dayjs) => {
         auction: adjustedAuctionDate,
       } as BondActionDatesType;
 
-      acc[key] = actionDates;
+      acc[key as AssetDurationTypes] = actionDates;
       return acc;
     },
-    {} as Record<keyof typeof bondData, BondActionDatesType>
+    {} as Record<AssetDurationTypes, BondActionDatesType>
   );
 };
+type ImportantBondDatesType = Record<AssetDurationTypes, BondActionDatesType>;
+type GetAssetDatesType = (selectedDate: Dayjs) => ImportantBondDatesType;
 
-const getAuctionDates = (selectedDate: Dayjs) => {
+const getAuctionDates: GetAssetDatesType = (selectedDate: Dayjs) => {
   return Object.entries(bondData).reduce(
     (
       acc,
-      [key, {maturity: maturityInDays, issue: daysToIssue, auctionDay}]: [
-        keyof typeof bondData,
-        BondInfoType,
-      ]
+      [key, {maturity: maturityInDays, issue: daysToIssue, auctionDay}]
     ) => {
       let adjustedDate = selectedDate;
       while (adjustedDate.day() !== auctionDay) {
-        adjustedDate = adjustedDate.add(1, "day");
+        adjustedDate = adjustedDate.subtract(1, "day");
       }
 
       const actionDates = {
@@ -85,10 +51,10 @@ const getAuctionDates = (selectedDate: Dayjs) => {
         maturity: adjustedDate.add(daysToIssue + maturityInDays, "days"),
       } as BondActionDatesType;
 
-      acc[key] = actionDates;
+      acc[key as AssetDurationTypes] = actionDates;
       return acc;
     },
-    {} as Record<keyof typeof bondData, BondActionDatesType>
+    {} as ImportantBondDatesType
   );
 };
 
@@ -96,17 +62,15 @@ const getMaturityDates = (selectedDate: Dayjs) => {
   return Object.entries(bondData).reduce(
     (
       acc,
-      [key, {maturity: maturityInDays, issue: daysToIssue, auctionDay}]: [
-        keyof typeof bondData,
-        BondInfoType,
-      ]
+      [key, {maturity: maturityInDays, issue: daysToIssue, auctionDay}]
     ) => {
       let adjustedAuctionDate = selectedDate.subtract(
         maturityInDays + daysToIssue,
         "days"
       );
+
       while (adjustedAuctionDate.day() !== auctionDay) {
-        adjustedAuctionDate = adjustedAuctionDate.add(1, "day");
+        adjustedAuctionDate = adjustedAuctionDate.subtract(1, "day");
       }
 
       const actionDates = {
@@ -114,14 +78,22 @@ const getMaturityDates = (selectedDate: Dayjs) => {
         issue: adjustedAuctionDate.add(daysToIssue, "days"),
         auction: adjustedAuctionDate,
       } as BondActionDatesType;
-      acc[key] = actionDates;
+      acc[key as AssetDurationTypes] = actionDates;
       return acc;
     },
-    {} as Record<keyof typeof bondData, BondActionDatesType>
+    {} as ImportantBondDatesType
   );
 };
 
-export const calcDates = ({selectedDate, dateType}: AssetDurationProps) => {
+type CalcDatesProps = {
+  selectedDate: Dayjs;
+  dateType: DateType;
+};
+
+export const calcDates = ({
+  selectedDate,
+  dateType,
+}: CalcDatesProps): ImportantBondDatesType => {
   switch (dateType) {
     case "maturity":
       return getMaturityDates(selectedDate);
@@ -130,4 +102,59 @@ export const calcDates = ({selectedDate, dateType}: AssetDurationProps) => {
     case "auction":
       return getAuctionDates(selectedDate);
   }
+};
+
+export const humanReadableDate = (input: Dayjs): string => {
+  const updatedDate = input.hour(10).minute(0).second(0);
+  return updatedDate.format("ddd MMM D, YYYY");
+};
+
+export const sortByAuctionDate = (arr) => {
+  return arr.sort((a, b) => {
+    const first = Object.values(a)[0].auction;
+    const second = Object.values(b)[0].auction;
+    return first.isBefore(second) ? -1 : 1;
+  });
+};
+
+export const sortedDurations = Object.entries(bondData).sort((a, b) => {
+  return b[1].maturity - a[1].maturity;
+});
+
+export const buildBillLadder = (
+  finalMautityDate: Dayjs
+): [AssetDurationTypes, ImportantBondDatesType][] => {
+  const actionDate: Dayjs = dayjs();
+  const viablebillStack = [];
+
+  const findViableBills = (currentMaturityDate: Dayjs, num: number) => {
+    // Based on this maturity date, find all bills that could be purchased;
+    const possibleBills = getMaturityDates(currentMaturityDate);
+    const bills = [];
+    for (let d = num; d < sortedDurations.length; d++) {
+      const currentDuration = sortedDurations[d][0] as AssetDurationTypes;
+      const bill = possibleBills[currentDuration as AssetDurationTypes];
+      const auctionDate = bill.auction;
+      const isViable = auctionDate >= actionDate;
+      if (isViable) {
+        const prevBills = findViableBills(auctionDate, d);
+        bills.push({[currentDuration]: bill});
+        if (prevBills) {
+          bills.push(...prevBills);
+        }
+        return bills;
+      }
+      if (finalMautityDate.isSame(currentMaturityDate)) {
+        return [];
+      }
+    }
+  };
+
+  for (let d = 0; d < sortedDurations.length; d++) {
+    const durationCombinations = findViableBills(finalMautityDate, d);
+    if (durationCombinations.length) {
+      viablebillStack.push(durationCombinations);
+    }
+  }
+  return viablebillStack;
 };
