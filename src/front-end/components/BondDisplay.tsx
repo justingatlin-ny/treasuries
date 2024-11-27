@@ -6,38 +6,48 @@ import {
   Stack,
   Paper,
   Typography,
-  IconButton,
 } from "@mui/material";
 import {AssetDurationContainer, BondDisplayContainer} from "../styles";
 import {
   AssetDurationProps,
   AssetDurationTypes,
-  BondActionDatesType,
-  BondActionDisplayType,
+  BillActionDatesType,
+  BillActionDisplayType,
+  DateSelectionType,
   DateType,
   IAddBond,
 } from "../types";
-import {calcDates, humanReadableDate} from "../utils";
-import dayjs, {Dayjs} from "dayjs";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
+import {calcDates, collectDateStatuses, humanReadableDate} from "../utils";
+import {Dayjs} from "dayjs";
 
-const DisplayActionInfo: React.FC<{actionDates: BondActionDatesType}> = ({
-  actionDates,
-}) => {
-  const sortedActions = Object.keys(actionDates).sort();
+const DisplayActionInfo: React.FC<{
+  addBond: IAddBond;
+  actionDates: BillActionDatesType;
+}> = ({actionDates, addBond}) => {
+  const sortedActions = Object.keys(actionDates).sort() as DateType[];
   return (
     <>
-      {sortedActions.map((action: keyof BondActionDatesType) => {
+      {sortedActions.map((dateType): JSX.Element => {
+        const date = actionDates[dateType];
         return (
-          <Paper className={action} elevation={0} key={action}>
+          <Paper
+            onClick={() => {
+              if (dateType !== "issue") {
+                addBond({dateType, date});
+              }
+            }}
+            className={dateType}
+            elevation={0}
+            key={dateType}
+          >
             <Typography
               variant={"subtitle2"}
               sx={{textTransform: "capitalize"}}
             >
-              {action}
+              {dateType}
             </Typography>
             <Typography variant="subtitle1">
-              {humanReadableDate(actionDates[action])}
+              {humanReadableDate(date)}
             </Typography>
           </Paper>
         );
@@ -59,41 +69,23 @@ const AssetDuration: React.FC<AssetDurationProps> = ({
       {Object.entries(calcDates({selectedDate, dateType})).map(
         ([duration, actionDates]: [
           AssetDurationTypes,
-          BondActionDatesType,
+          BillActionDatesType,
         ]) => {
           const id = performance.now();
-          const className = Object.entries(actionDates)
-            .reduce((acc, [key, value]) => {
-              const isPast = value.isBefore(dayjs());
-              if (isPast) {
-                acc.push(`${key.toLowerCase()}IsPassed`);
-              }
-              return acc;
-            }, [])
-            .join(" ");
           return (
             <AssetDurationContainer
               key={duration}
-              className={className}
-              size={4}
+              className={collectDateStatuses(actionDates)}
+              size={{xs: 12, sm: 6, md: 4}}
             >
               <Card>
-                <CardHeader
-                  title={duration.toLocaleUpperCase()}
-                  action={
-                    <IconButton
-                      title="Add bond to ladder"
-                      onClick={() => {
-                        addBond({...actionDates, duration, id});
-                      }}
-                    >
-                      <AddCircleIcon />
-                    </IconButton>
-                  }
-                />
+                <CardHeader title={duration.toLocaleUpperCase()} />
                 <CardContent>
                   <Stack gap={2} direction={"column"}>
-                    <DisplayActionInfo actionDates={actionDates} />
+                    <DisplayActionInfo
+                      addBond={addBond}
+                      actionDates={actionDates}
+                    />
                   </Stack>
                 </CardContent>
               </Card>
@@ -111,7 +103,7 @@ export const BondDisplay = ({
   type,
   addBond,
 }: {
-  displaySettings: BondActionDisplayType;
+  displaySettings: BillActionDisplayType;
   date: Dayjs;
   type: DateType;
   addBond: IAddBond;

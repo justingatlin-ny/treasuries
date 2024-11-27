@@ -5,9 +5,9 @@ import { Dayjs } from "dayjs";
 export type DateType = "maturity" | "auction" | "issue";
 export type DateSelectionType = "maturity" | "auction";
 
-export type IAddBond = (bond: SelectedBondType) => void;
+export type IAddBond = (assetInfo: { dateType: DateSelectionType, date: Dayjs }) => void;
 
-export const bondData = {
+export const billMaturityIssueAuctionCalculations = {
   "4-week": {
     maturity: 28,
     issue: 5,
@@ -35,9 +35,53 @@ export const bondData = {
   },
 } as const;
 
-export type BondDataType = typeof bondData;
-export type AssetDurationTypes = keyof typeof bondData;
+const exampleBillLadder = [
+  [
+    {
+      "8-week": {
+        "maturity": "2025-02-25T15:18:51.843Z",
+        "issue": "2024-12-31T15:18:51.843Z",
+        "auction": "2024-12-26T15:18:51.843Z"
+      }
+    }
+  ],
+  [
+    {
+      "42-day": {
+        "maturity": "2025-02-27T15:18:51.843Z",
+        "issue": "2025-01-16T15:18:51.843Z",
+        "auction": "2025-01-14T15:18:51.843Z"
+      }
+    },
+    {
+      "4-week": {
+        "maturity": "2025-01-14T15:18:51.843Z",
+        "issue": "2024-12-17T15:18:51.843Z",
+        "auction": "2024-12-12T15:18:51.843Z"
+      }
+    }
+  ],
+  [
+    {
+      "4-week": {
+        "maturity": "2025-02-25T15:18:51.843Z",
+        "issue": "2025-01-28T15:18:51.843Z",
+        "auction": "2025-01-23T15:18:51.843Z"
+      }
+    },
+    {
+      "4-week": {
+        "maturity": "2025-01-21T15:18:51.843Z",
+        "issue": "2024-12-24T15:18:51.843Z",
+        "auction": "2024-12-19T15:18:51.843Z"
+      }
+    }
+  ]
+]
 
+export type BondDataType = typeof billMaturityIssueAuctionCalculations;
+export type AssetDurationTypes = keyof typeof billMaturityIssueAuctionCalculations;
+export type BillType = Record<AssetDurationTypes, BillActionDatesType>;
 export interface AssetDurationProps {
   selectedDate: Dayjs;
   dateType: DateType;
@@ -50,11 +94,11 @@ export type BondInfoType = {
   auctionDay: number;
 }
 
-export type BondActionDatesType = Record<DateType, Dayjs>;
-export type BondActionDisplayType = Record<DateSelectionType, boolean>;
+export type BillActionDatesType = Record<DateType, Dayjs>;
+export type BillActionDisplayType = Record<DateSelectionType, boolean>;
 
 export interface BondDisplayContainerProps extends Grid2Props {
-  displaysettings: BondActionDisplayType;
+  displaysettings: BillActionDisplayType;
 }
 
 export interface StyledBondProps extends Grid2Props {
@@ -64,11 +108,11 @@ export interface StyledBondProps extends Grid2Props {
 export interface BondControlProps {
   date: Dayjs;
   type: DateType;
-  displaySettings: BondActionDisplayType;
+  displaySettings: BillActionDisplayType;
   handleChange: (eventData: ChangeEvent<HTMLInputElement> | Dayjs) => void;
 }
 
-export interface SelectedBondType extends BondActionDatesType {
+export interface SelectedBondType extends BillActionDatesType {
   duration: AssetDurationTypes;
   id: number;
 }

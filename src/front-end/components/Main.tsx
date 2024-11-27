@@ -2,12 +2,10 @@ import {type ChangeEvent, useEffect, useState} from "react";
 import Grid2 from "@mui/material/Grid2";
 import dayjs, {Dayjs} from "dayjs";
 import {
-  BondActionDisplayType,
-  SelectedBondType,
+  BillActionDisplayType,
   IAddBond,
   DateSelectionType,
-  AssetDurationTypes,
-  BondActionDatesType,
+  BillType,
 } from "../types";
 import {BondControls} from "./BondControls";
 import {BondDisplay} from "./BondDisplay";
@@ -15,13 +13,15 @@ import BondSelectionContainer from "./BondSelectionContainer";
 import {buildBillLadder} from "../utils";
 
 const Main = () => {
-  const [date, setDate] = useState<Dayjs>(dayjs().add(4, "months"));
+  const [date, setDate] = useState<Dayjs>(
+    dayjs().add(4, "month").set("date", 1)
+  );
   const [type, setType] = useState<DateSelectionType>("maturity");
-  const [billLadders, updateBondList] = useState<
-    Record<AssetDurationTypes, BondActionDatesType>[]
-  >([]);
+  const [ladderList, updateBondList] = useState<BillType[][]>(
+    [] as BillType[][]
+  );
   const [displaysettings, updateDisplaySettings] =
-    useState<BondActionDisplayType>({
+    useState<BillActionDisplayType>({
       auction: true,
       maturity: true,
     });
@@ -43,16 +43,9 @@ const Main = () => {
     }
   };
 
-  const addBond: IAddBond = (bond) => {
-    // updateBondList((prev) => prev.concat(bond));
-    // setType("maturity");
-    // setDate(bond.auction);
-  };
-
-  const removeBond = (bondToRemove: number): void => {
-    // updateBondList((prev) =>
-    //   prev.filter((currentBond) => bondToRemove !== currentBond.id)
-    // );
+  const addBond: IAddBond = ({dateType, date}) => {
+    setType(dateType);
+    setDate(date);
   };
 
   useEffect(() => {
@@ -86,10 +79,7 @@ const Main = () => {
         type={type}
         date={date}
       />
-      <BondSelectionContainer
-        billLadders={billLadders}
-        removeBond={removeBond}
-      />
+      <BondSelectionContainer ladderList={ladderList} />
       <BondDisplay
         addBond={addBond}
         displaySettings={displaysettings}

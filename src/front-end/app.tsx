@@ -9,12 +9,10 @@ const root = ReactDOM.createRoot(
 
 const App = () => {
   return (
-    <>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
-      <ThemeProvider theme={theme}>
-        <Layout />
-      </ThemeProvider>
-    </>
+      <Layout />
+    </ThemeProvider>
   );
 };
 
