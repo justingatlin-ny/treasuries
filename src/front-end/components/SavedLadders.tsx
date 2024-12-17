@@ -7,10 +7,17 @@ import {
   AccordionDetails,
   AccordionSummaryProps,
   accordionSummaryClasses,
+  IconButton,
+  Box,
 } from "@mui/material";
-import {BillType} from "../types";
-import {determineStatus, humanReadableDate, sortBillsByDate} from "../utils";
-import {ExpandMore} from "@mui/icons-material";
+import {BillType, SavedLadderPayload} from "../types";
+import {
+  determineStatus,
+  getImportantDates,
+  humanReadableDate,
+  sortBillsByDate,
+} from "../utils";
+import {ExpandMore, RemoveCircle} from "@mui/icons-material";
 import {theme} from "../styles";
 
 const Container = styled(Grid2)``;
@@ -18,24 +25,29 @@ const Container = styled(Grid2)``;
 const AccordionSummary = styled((props: AccordionSummaryProps) => (
   <MuiAccordionSummary {...props} />
 ))(({theme}) => ({
-  backgroundColor: "rgba(0, 0, 0, .03)",
+  backgroundColor: "rgba(0, 0, 0, .08)",
+  flexDirection: "row-reverse",
+  [`& .${accordionSummaryClasses.expandIconWrapper}.${accordionSummaryClasses.expanded}`]:
+    {
+      // transform: "rotate(180deg)",
+    },
   [`& .${accordionSummaryClasses.content}`]: {
     marginLeft: theme.spacing(1),
   },
-  ...theme.applyStyles("dark", {
-    backgroundColor: "rgba(255, 255, 255, .05)",
-  }),
 }));
 
-const BondSelectionContainer: React.FC<{
-  ladderList: BillType[][];
-}> = ({ladderList}) => {
+const SavedLadders: React.FC<{
+  savedLadders: SavedLadderPayload[];
+  removeLadder: (bills: BillType[]) => void;
+}> = ({savedLadders, removeLadder}) => {
+  if (!savedLadders.length) return null;
   return (
-    <Container size={{sm: 12, md: 8}}>
-      {ladderList.map((billArray, idx) => {
+    <Container>
+      {savedLadders.map(({selectedBills}, idx) => {
+        const {monthNeeded, firstDate} = getImportantDates(selectedBills);
+
         return (
           <Accordion
-            defaultExpanded
             disableGutters
             key={idx.toString()}
             sx={{
@@ -44,9 +56,25 @@ const BondSelectionContainer: React.FC<{
               },
             }}
           >
-            <AccordionSummary expandIcon={<ExpandMore />}>
-              {`Ladder Option ${idx + 1}`}
-            </AccordionSummary>
+            <Box sx={{display: "flex"}}>
+              <AccordionSummary sx={{flexGrow: 1}} expandIcon={<ExpandMore />}>
+                <Typography>{`Ladder for ${monthNeeded}`}</Typography>
+                <Typography>{` starts ${firstDate.format("ddd MMM D, YYYY")}`}</Typography>
+              </AccordionSummary>
+              <Box
+                sx={{
+                  backgroundColor: "rgba(0, 0, 0, .08)",
+                  alignContent: "center",
+                }}
+              >
+                <IconButton
+                  name="Add this ladder"
+                  onClick={() => removeLadder(selectedBills)}
+                >
+                  <RemoveCircle color={"error"} />
+                </IconButton>
+              </Box>
+            </Box>
             <AccordionDetails>
               <Grid2 container spacing={2}>
                 {["Duration", "Purchase", "Mature"].map((label, idx) => (
@@ -54,7 +82,7 @@ const BondSelectionContainer: React.FC<{
                     <Typography>{label}</Typography>
                   </Grid2>
                 ))}
-                {sortBillsByDate(billArray).map((bill) => {
+                {sortBillsByDate(selectedBills).map((bill) => {
                   return Object.entries(bill).map(([duration, dates], num) => {
                     return (
                       <>
@@ -90,4 +118,4 @@ const BondSelectionContainer: React.FC<{
   );
 };
 
-export default BondSelectionContainer;
+export default SavedLadders;

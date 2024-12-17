@@ -54,6 +54,7 @@
     "@mui/x-date-pickers": "^7.22.2",
     "@toolpad/core": "^0.9.0",
     "dayjs": "^1.11.13",
+    "dayjs-banking-days": "^1.0.0",
     "electron-squirrel-startup": "^1.0.1"
   },
   "peerDependencies": {

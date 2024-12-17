@@ -1,1 +1,1 @@
-import "./front-end/app"
+import "./front-end/app";
