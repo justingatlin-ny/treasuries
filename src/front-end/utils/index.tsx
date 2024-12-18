@@ -68,20 +68,13 @@ const createUnpublishedBills = (
     term,
     {maturityInDays, daysToIssue, auctionDayOfWeek},
   ] of maturities) {
-    let adjustedAuctionDate = latestMaturityForBills.subtract(
-      maturityInDays + daysToIssue,
-      "days"
-    );
+    let adjustedAuctionDate = earliestAuctionDate;
 
     // if adjusted auction date is current friday and this bill's auction date is thursday,
     // subtract one day to get to thursday;
     while (adjustedAuctionDate.day() !== auctionDayOfWeek) {
       // Keep going backwards in the week until the day of the week matches
-      adjustedAuctionDate = adjustedAuctionDate.subtract(1, "days");
-    }
-
-    if (adjustedAuctionDate.isBefore(earliestAuctionDate)) {
-      break;
+      adjustedAuctionDate = adjustedAuctionDate.add(1, "days");
     }
 
     while (
@@ -90,8 +83,6 @@ const createUnpublishedBills = (
     ) {
       adjustedAuctionDate = adjustedAuctionDate.add(1, "days");
     }
-    // Auction date has been adjusted to thursday January 2025,
-    // now use the data to set the action dates
 
     let issueDate = adjustedAuctionDate.add(daysToIssue, "days");
 
@@ -102,10 +93,18 @@ const createUnpublishedBills = (
       issueDate = issueDate.add(1, "days");
     }
 
-    const maturityDate = adjustedAuctionDate.add(
-      daysToIssue + maturityInDays,
-      "days"
-    );
+    let maturityDate = issueDate.add(maturityInDays, "days");
+
+    while (
+      maturityDate.isBankingHoliday() ||
+      /0|6/.test(issueDate.day().toString())
+    ) {
+      maturityDate = maturityDate.add(1, "days");
+    }
+
+    if (maturityDate.isAfter(latestMaturityForBills)) {
+      continue;
+    }
 
     const actionDates = {
       maturityDate: getDate(maturityDate),
@@ -146,12 +145,35 @@ export const humanReadableDate = (input: string): string => {
   return updatedDate.format("ddd MMM D, YYYY");
 };
 
+const sortBillsByDateFunc = (
+  billA: RealBillsCollectionType,
+  billB: RealBillsCollectionType
+) => {
+  const first = dayjs(Object.values(billA)[0].auctionDate);
+  const second = dayjs(Object.values(billB)[0].auctionDate);
+  return first.isBefore(second) ? -1 : 1;
+};
+
 export const sortBillsByDate = (billArray: RealBillsCollectionType[]) => {
-  return billArray.sort((billA, billB) => {
-    const first = dayjs(Object.values(billA)[0].auctionDate);
-    const second = dayjs(Object.values(billB)[0].auctionDate);
-    return first.isBefore(second) ? -1 : 1;
+  return billArray.sort(sortBillsByDateFunc);
+};
+
+export const sortLaddersByStartDateThenDuration = (
+  ladderList: RealBillsCollectionType[][]
+) => {
+  const laddersSortedByStartDate = ladderList.map((ladder) => {
+    return sortBillsByDate(ladder);
   });
+  return laddersSortedByStartDate.sort(
+    (
+      ladderA: RealBillsCollectionType[],
+      ladderB: RealBillsCollectionType[]
+    ) => {
+      const auctionA = dayjs(Object.values(ladderA[0])[0].auctionDate);
+      const auctionB = dayjs(Object.values(ladderB[0])[0].auctionDate);
+      return auctionA.isBefore(auctionB) ? -1 : 1;
+    }
+  );
 };
 
 export const sortDurations = (bills: RealBillsCollectionType) => {

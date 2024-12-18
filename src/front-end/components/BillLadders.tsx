@@ -11,7 +11,12 @@ import {
   Box,
 } from "@mui/material";
 import {RealBillsCollectionType} from "../types";
-import {determineStatus, humanReadableDate, sortBillsByDate} from "../utils";
+import {
+  determineStatus,
+  humanReadableDate,
+  sortBillsByDate,
+  sortLaddersByStartDateThenDuration,
+} from "../utils";
 import {AddCircle, ExpandMore} from "@mui/icons-material";
 import {theme} from "../styles";
 
@@ -35,9 +40,11 @@ const BillLadders: React.FC<{
   ladderList: RealBillsCollectionType[][];
   addLadder: (bills: RealBillsCollectionType[]) => void;
 }> = ({ladderList, addLadder}) => {
+  const sortedLadderList: RealBillsCollectionType[][] =
+    sortLaddersByStartDateThenDuration(ladderList);
   return (
     <Container size={{sm: 12, md: 8}}>
-      {ladderList.map((billArray, idx) => {
+      {sortedLadderList.map((billArray, idx) => {
         return (
           <Accordion
             defaultExpanded
@@ -74,7 +81,7 @@ const BillLadders: React.FC<{
                     <Typography>{label}</Typography>
                   </Grid2>
                 ))}
-                {sortBillsByDate(billArray).map((bill) => {
+                {billArray.map((bill) => {
                   return Object.entries(bill).map(([, details], num) => {
                     return (
                       <>

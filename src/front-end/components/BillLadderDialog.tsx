@@ -33,7 +33,6 @@ const BillLadderDialog: React.FC<{
       sx={{p: 2}}
       PaperProps={{
         component: "form",
-        inert: "true",
         onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
           event.preventDefault();
           const formData = new FormData(event.currentTarget);

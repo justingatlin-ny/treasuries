@@ -4,14 +4,13 @@ import dayjs, {Dayjs} from "dayjs";
 import {
   BillActionDisplayType,
   DateSelectionType,
-  BillType,
   SavedLadderPayload,
   BillActionDatesType,
   AssetDurationTypes,
   SavedBillActionType,
   DateType,
   RealBillsCollectionType,
-  getMockBills,
+  TreasurySecurityType,
 } from "../types";
 import {BondControls} from "./BondControls";
 import {buildBillLadder} from "../utils";
@@ -22,13 +21,7 @@ import SavedLadders from "./SavedLadders";
 const Main = () => {
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Dayjs>(
-    dayjs()
-      .add(4, "month")
-      .set("date", 1)
-      .set("hour", 0)
-      .set("minute", 0)
-      .set("second", 0)
-      .set("millisecond", 0)
+    dayjs().add(4, "month").set("date", 1)
   );
   const [type, setType] = useState<DateSelectionType>("maturity");
   const [savedLadders, updateSavedLadders] = useState<SavedLadderPayload[]>([]);
@@ -44,6 +37,7 @@ const Main = () => {
   const [selectedBills, updateSelectedBill] = useState<
     RealBillsCollectionType[]
   >([]);
+
   const addLadder = (bills: RealBillsCollectionType[]) => {
     setOpen(true);
     updateSelectedBill(bills);
@@ -64,7 +58,9 @@ const Main = () => {
     setOpen(false);
   };
 
-  const removeLadder = () => {};
+  const removeLadder = (id: number) => {
+    updateSavedLadders((prev) => prev.filter((ladder) => ladder.id !== id));
+  };
 
   const handleChange = (
     eventData: MouseEvent<HTMLButtonElement> | Dayjs,
@@ -88,23 +84,7 @@ const Main = () => {
     const ladders = window.localStorage.getItem("savedLadders");
     if (ladders) {
       const parsedLadders = JSON.parse(ladders);
-      const updatedLadders = parsedLadders.map((ladder) => {
-        return ladder.selectedBills.map((billData) => {
-          const [duration, actions] = Object.entries(billData)[0] as [
-            AssetDurationTypes,
-            SavedBillActionType,
-          ];
-          const reduced = Object.entries(actions).reduce(
-            (acc, [action, date]: [DateType, string]) => {
-              acc[action] = dayjs(date);
-              return acc;
-            },
-            {} as BillActionDatesType
-          );
-          return {[duration]: reduced};
-        });
-      });
-      updateSavedLadders(updatedLadders);
+      updateSavedLadders(parsedLadders);
     }
   }, []);
 
@@ -124,9 +104,10 @@ const Main = () => {
   }, [date, type]);
 
   useEffect(() => {
-    if (savedLadders.length) {
-      window.localStorage.setItem("savedLadders", JSON.stringify(savedLadders));
-    }
+    window.localStorage.setItem(
+      "savedLadders",
+      JSON.stringify(savedLadders || [])
+    );
   }, [savedLadders]);
 
   useEffect(() => {

@@ -38,12 +38,12 @@ const AccordionSummary = styled((props: AccordionSummaryProps) => (
 
 const SavedLadders: React.FC<{
   savedLadders: SavedLadderPayload[];
-  removeLadder: (bills: BillType[]) => void;
+  removeLadder: (id: number) => void;
 }> = ({savedLadders, removeLadder}) => {
   if (!savedLadders.length) return null;
   return (
     <Container>
-      {savedLadders.map(({selectedBills}, idx) => {
+      {savedLadders.map(({id, selectedBills}, idx) => {
         const {monthNeeded, firstDate} = getImportantDates(selectedBills);
 
         return (
@@ -69,7 +69,7 @@ const SavedLadders: React.FC<{
               >
                 <IconButton
                   name="Add this ladder"
-                  onClick={() => removeLadder(selectedBills)}
+                  onClick={() => removeLadder(id)}
                 >
                   <RemoveCircle color={"error"} />
                 </IconButton>
@@ -83,26 +83,26 @@ const SavedLadders: React.FC<{
                   </Grid2>
                 ))}
                 {sortBillsByDate(selectedBills).map((bill) => {
-                  return Object.entries(bill).map(([duration, dates], num) => {
+                  return Object.entries(bill).map(([, details], num) => {
                     return (
                       <>
                         <Grid2 size={4} key={"duration" + num}>
-                          <Typography>{duration}</Typography>
+                          <Typography>{details.securityTerm}</Typography>
                         </Grid2>
                         <Grid2 size={4} key={"auction" + num}>
                           <Typography
                             className={
-                              determineStatus(dates.auction).IsClose
+                              determineStatus(details.auctionDate).IsClose
                                 ? "isClose"
                                 : ""
                             }
                           >
-                            {humanReadableDate(dates.auction)}
+                            {humanReadableDate(details.auctionDate)}
                           </Typography>
                         </Grid2>
                         <Grid2 size={4} key={"maturity" + num}>
                           <Typography>
-                            {humanReadableDate(dates.maturity)}
+                            {humanReadableDate(details.maturityDate)}
                           </Typography>
                         </Grid2>
                       </>
