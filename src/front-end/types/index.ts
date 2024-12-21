@@ -122,9 +122,8 @@ export interface StyledBondProps extends Grid2Props {
 }
 
 export interface BondControlProps {
-  date: Dayjs;
-  type: DateType;
-  displaySettings: BillActionDisplayType;
+  maturityDate: Dayjs;
+  auctionDate: Dayjs;
   handleChange: (
     eventData: MouseEvent<HTMLElement> | Dayjs,
     newValue?: string | Dayjs

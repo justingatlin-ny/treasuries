@@ -40,6 +40,15 @@ const BillLadders: React.FC<{
   ladderList: RealBillsCollectionType[][];
   addLadder: (bills: RealBillsCollectionType[]) => void;
 }> = ({ladderList, addLadder}) => {
+  if (ladderList.length === 0) {
+    return (
+      <Container size={{sm: 12, md: 8}}>
+        <Typography textAlign={"center"}>
+          No viable ladders can be created with the dates provided.
+        </Typography>
+      </Container>
+    );
+  }
   const sortedLadderList: RealBillsCollectionType[][] =
     sortLaddersByStartDateThenDuration(ladderList);
   return (

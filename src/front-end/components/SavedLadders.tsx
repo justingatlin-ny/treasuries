@@ -43,8 +43,8 @@ const SavedLadders: React.FC<{
   if (!savedLadders.length) return null;
   return (
     <Container>
-      {savedLadders.map(({id, selectedBills}, idx) => {
-        const {monthNeeded, firstDate} = getImportantDates(selectedBills);
+      {savedLadders.map(({id, selectedBills, monthNeeded}, idx) => {
+        const {firstDate} = getImportantDates(selectedBills);
 
         return (
           <Accordion
@@ -58,8 +58,16 @@ const SavedLadders: React.FC<{
           >
             <Box sx={{display: "flex"}}>
               <AccordionSummary sx={{flexGrow: 1}} expandIcon={<ExpandMore />}>
-                <Typography>{`Ladder for ${monthNeeded}`}</Typography>
-                <Typography>{` starts ${firstDate.format("ddd MMM D, YYYY")}`}</Typography>
+                <Typography>Ladder for</Typography>
+                <Typography
+                  sx={{ml: 0.5, mr: 0.5, fontWeight: "bold"}}
+                  className="month"
+                >{`${monthNeeded}`}</Typography>
+                <Typography>starts</Typography>
+                <Typography
+                  className="start-date"
+                  sx={{ml: 0.5, mr: 0.5, fontWeight: "bold"}}
+                >{`${firstDate.format("ddd MMM D, YYYY")}`}</Typography>
               </AccordionSummary>
               <Box
                 sx={{

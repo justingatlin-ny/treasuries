@@ -7,7 +7,7 @@ const Layout = () => {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{flexGrow: 1}}>
-            When to Buy Treasuries
+            Create Treasury Ladders
           </Typography>
         </Toolbar>
       </AppBar>

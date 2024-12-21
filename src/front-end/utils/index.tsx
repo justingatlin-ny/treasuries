@@ -190,11 +190,15 @@ export const sortDurations = (bills: RealBillsCollectionType) => {
 
 export const buildBillLadder = (
   finalMautityDate: Dayjs,
-  realBills: RealBillsCollectionType
+  realBills: RealBillsCollectionType,
+  firstAuctionDate = dayjs()
 ): RealBillsCollectionType[][] => {
-  const today: Dayjs = dayjs();
+  const today = firstAuctionDate;
   const stackOfBillLadders = [];
-  const possibleBills = createUnpublishedBills(finalMautityDate);
+  const possibleBills = createUnpublishedBills(
+    finalMautityDate,
+    firstAuctionDate
+  );
   const merged: RealBillsCollectionType = {...possibleBills, ...realBills};
   const sortedDurationsList: string[] = sortDurations(merged).reduce(
     (acc, [key]) => {
@@ -305,7 +309,12 @@ export const getImportantDates = (selectedBills: RealBillsCollectionType[]) => {
     return acc;
   }, dayjs());
 
-  const monthNeeded = finalMaturity.add(1, "month").format("MMMM");
+  const dateOfMaturity = finalMaturity.date();
+  const monthNeeded =
+    dateOfMaturity >= 6
+      ? finalMaturity.add(1, "month").set("date", 1)
+      : finalMaturity.set("date", 1);
+
   return {firstDate, monthNeeded, finalMaturity};
 };
 

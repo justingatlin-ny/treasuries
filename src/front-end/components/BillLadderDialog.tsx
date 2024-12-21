@@ -1,4 +1,5 @@
-import {useRef} from "react";
+import {useState} from "react";
+import {MonthCalendar} from "@mui/x-date-pickers";
 import {
   Box,
   Button,
@@ -6,12 +7,69 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Select,
+  SelectChangeEvent,
+  MenuItem,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import {SavedLadderPayload, RealBillsCollectionType} from "../types";
 import {getImportantDates} from "../utils";
+import dayjs, {Dayjs} from "dayjs";
+
+interface MonthDropdownProps {
+  finalDate: Dayjs;
+}
+
+const formatMonthDisplay = (input: Dayjs) => {
+  return input.format("MMMM YYYY");
+};
+
+const MonthDropdown: React.FC<MonthDropdownProps> = ({finalDate}) => {
+  const dateOfMaturity = finalDate.date();
+  const initMonth =
+    dateOfMaturity >= 6
+      ? finalDate.add(1, "month").set("date", 1)
+      : finalDate.set("date", 1);
+
+  const [monthNeeded, setMonthNeeded] = useState<string>(
+    formatMonthDisplay(initMonth)
+  );
+
+  const handleChange = (event: SelectChangeEvent) => {
+    setMonthNeeded(event.target.value);
+  };
+
+  const monthList = (initMonth: Dayjs) => {
+    const months = [];
+    for (let m = 0; m <= 3; m++) {
+      const subsequentMonths = dayjs(initMonth).add(m, "months");
+      const formatted = formatMonthDisplay(subsequentMonths);
+      months.push(
+        <MenuItem
+          key={subsequentMonths.toISOString()}
+          value={formatMonthDisplay(subsequentMonths)}
+        >
+          {formatted}
+        </MenuItem>
+      );
+    }
+    return months;
+  };
+
+  return (
+    <Select
+      autoWidth
+      id="month"
+      name="monthNeeded"
+      defaultValue={monthNeeded}
+      onChange={handleChange}
+    >
+      {monthList(initMonth)}
+    </Select>
+  );
+};
 
 const BillLadderDialog: React.FC<{
   onClose: (input: SavedLadderPayload) => void;
@@ -22,8 +80,7 @@ const BillLadderDialog: React.FC<{
   const handleClose = (payload?: SavedLadderPayload) => {
     onClose(payload);
   };
-  const {monthNeeded, firstDate, finalMaturity} =
-    getImportantDates(selectedBills);
+  const {firstDate, finalMaturity} = getImportantDates(selectedBills);
 
   return (
     <Dialog
@@ -38,6 +95,7 @@ const BillLadderDialog: React.FC<{
           const formData = new FormData(event.currentTarget);
           const formJson = Object.fromEntries((formData as any).entries());
           const notes: string = formJson.notes;
+          const monthNeeded = formJson.monthNeeded;
           const id = performance.now();
 
           handleClose({notes, monthNeeded, selectedBills, id});
@@ -45,9 +103,8 @@ const BillLadderDialog: React.FC<{
       }}
     >
       <DialogTitle>
-        Add
         <Typography component={"span"} variant="h6">
-          {monthNeeded}
+          <MonthDropdown finalDate={finalMaturity} />
         </Typography>{" "}
         Expenses Ladder
       </DialogTitle>
