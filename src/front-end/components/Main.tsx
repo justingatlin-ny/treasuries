@@ -1,12 +1,7 @@
-import {MouseEvent, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import Grid2 from "@mui/material/Grid2";
 import dayjs, {Dayjs} from "dayjs";
-import {
-  BillActionDisplayType,
-  DateSelectionType,
-  SavedLadderPayload,
-  RealBillsCollectionType,
-} from "../types";
+import {SavedLadderPayload, RealBillsCollectionType} from "../types";
 import {BondControls} from "./BondControls";
 import {buildBillLadder} from "../utils";
 import BillLadders from "./BillLadders";
