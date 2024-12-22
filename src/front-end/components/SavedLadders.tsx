@@ -40,7 +40,12 @@ const SavedLadders: React.FC<{
   savedLadders: SavedLadderPayload[];
   removeLadder: (id: number) => void;
 }> = ({savedLadders, removeLadder}) => {
-  if (!savedLadders.length) return null;
+  if (!savedLadders.length)
+    return (
+      <Container>
+        <Typography textAlign={"center"}>No saved ladders</Typography>
+      </Container>
+    );
   return (
     <Container>
       {savedLadders.map(({id, selectedBills, monthNeeded}, idx) => {

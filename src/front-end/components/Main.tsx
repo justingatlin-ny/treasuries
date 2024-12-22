@@ -78,22 +78,16 @@ const Main = () => {
   useEffect(() => {
     if (maturityDate) {
       if (window?.electronAPI?.getBills) {
-        window.electronAPI
-          .getBills()
-          .then((realBills: RealBillsCollectionType) => {
-            const ladders = buildBillLadder(
-              maturityDate,
-              realBills,
-              auctionDate
-            );
-            updateBondList(ladders);
-          });
+        window.electronAPI.getBills().then((realBills) => {
+          const ladders = buildBillLadder(maturityDate, realBills, auctionDate);
+          updateBondList(ladders);
+        });
       }
     }
   }, [maturityDate, auctionDate]);
 
   return (
-    <Grid2 container spacing={2} sx={{p: 2}} direction={"row"}>
+    <Grid2 container spacing={2} sx={{p: 2}} direction={"column"}>
       <SavedLadders savedLadders={savedLadders} removeLadder={removeLadder} />
       <BondControls
         handleChange={handleChange}

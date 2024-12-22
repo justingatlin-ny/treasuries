@@ -14,7 +14,6 @@ import {RealBillsCollectionType} from "../types";
 import {
   determineStatus,
   humanReadableDate,
-  sortBillsByDate,
   sortLaddersByStartDateThenDuration,
 } from "../utils";
 import {AddCircle, ExpandMore} from "@mui/icons-material";
@@ -42,7 +41,7 @@ const BillLadders: React.FC<{
 }> = ({ladderList, addLadder}) => {
   if (ladderList.length === 0) {
     return (
-      <Container size={{sm: 12, md: 8}}>
+      <Container>
         <Typography textAlign={"center"}>
           No viable ladders can be created with the dates provided.
         </Typography>
@@ -52,7 +51,7 @@ const BillLadders: React.FC<{
   const sortedLadderList: RealBillsCollectionType[][] =
     sortLaddersByStartDateThenDuration(ladderList);
   return (
-    <Container size={{sm: 12, md: 8}}>
+    <Container>
       {sortedLadderList.map((billArray, idx) => {
         return (
           <Accordion
