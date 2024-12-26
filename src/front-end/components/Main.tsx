@@ -74,7 +74,7 @@ const Main = () => {
     if (maturityDate) {
       if (window?.electronAPI?.getBills) {
         window.electronAPI.getBills().then((realBills) => {
-          const ladders = buildBillLadder(maturityDate, realBills, auctionDate);
+          const ladders = buildBillLadder(maturityDate, auctionDate, realBills);
           updateBondList(ladders);
         });
       }
@@ -90,7 +90,6 @@ const Main = () => {
         auctionDate={auctionDate}
       />
       <BillLadders addLadder={addLadder} ladderList={ladderList} />
-
       <BillLadderDialog
         selectedBills={selectedBills}
         onClose={handleClose}

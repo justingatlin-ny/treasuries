@@ -4,22 +4,22 @@ import {
   Typography,
   Accordion,
   AccordionSummary as MuiAccordionSummary,
-  AccordionDetails,
+  AccordionDetails as MUIAccordianDetails,
   AccordionSummaryProps,
   accordionSummaryClasses,
   IconButton,
   Box,
 } from "@mui/material";
 import {RealBillsCollectionType} from "../types";
-import {
-  determineStatus,
-  humanReadableDate,
-  sortLaddersByStartDateThenDuration,
-} from "../utils";
+import {sortLaddersByStartDateThenDuration} from "../utils";
 import {AddCircle, ExpandMore} from "@mui/icons-material";
 import {theme} from "../styles";
+import LadderData from "./LadderData";
 
 const Container = styled(Grid2)``;
+const AccordionDetails = styled(MUIAccordianDetails)`
+  padding: 0;
+`;
 
 const AccordionSummary = styled((props: AccordionSummaryProps) => (
   <MuiAccordionSummary {...props} />
@@ -54,16 +54,7 @@ const BillLadders: React.FC<{
     <Container>
       {sortedLadderList.map((billArray, idx) => {
         return (
-          <Accordion
-            defaultExpanded
-            disableGutters
-            key={idx.toString()}
-            sx={{
-              ".isClose": {
-                color: theme.status.close,
-              },
-            }}
-          >
+          <Accordion defaultExpanded disableGutters key={idx.toString()}>
             <Box sx={{display: "flex"}}>
               <AccordionSummary sx={{flexGrow: 1}} expandIcon={<ExpandMore />}>
                 {`Ladder Option ${idx + 1}`}
@@ -83,42 +74,7 @@ const BillLadders: React.FC<{
               </Box>
             </Box>
             <AccordionDetails>
-              <Grid2 container spacing={2}>
-                {["Duration", "Purchase", "Mature"].map((label, idx) => (
-                  <Grid2 key={label + idx} size={4}>
-                    <Typography>{label}</Typography>
-                  </Grid2>
-                ))}
-                {billArray.map((bill) => {
-                  return Object.entries(bill).map(([, details], num) => {
-                    return (
-                      <>
-                        <Grid2 size={4} key={"duration" + num}>
-                          <Typography>
-                            {details.securityTerm} {details?.cusip || ""}
-                          </Typography>
-                        </Grid2>
-                        <Grid2 size={4} key={"auction" + num}>
-                          <Typography
-                            className={
-                              determineStatus(details.auctionDate).IsClose
-                                ? "isClose"
-                                : ""
-                            }
-                          >
-                            {humanReadableDate(details.auctionDate)}
-                          </Typography>
-                        </Grid2>
-                        <Grid2 size={4} key={"maturity" + num}>
-                          <Typography>
-                            {humanReadableDate(details.maturityDate)}
-                          </Typography>
-                        </Grid2>
-                      </>
-                    );
-                  });
-                })}
-              </Grid2>
+              <LadderData billArray={billArray} />
             </AccordionDetails>
           </Accordion>
         );

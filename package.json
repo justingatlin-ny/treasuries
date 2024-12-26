@@ -2,7 +2,7 @@
   "name": "treasuries",
   "productName": "treasuries",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Build treasury ladders starting at a specific date and maturing by a specific date.",
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
@@ -51,6 +51,7 @@
     "@fontsource/roboto": "^5.1.0",
     "@mui/icons-material": "^6.1.6",
     "@mui/material": "^6.1.6",
+    "@mui/x-data-grid": "^7.23.3",
     "@mui/x-date-pickers": "^7.22.2",
     "@toolpad/core": "^0.9.0",
     "dayjs": "^1.11.13",

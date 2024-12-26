@@ -4,64 +4,17 @@ import dayjsBankingDays from "dayjs-banking-days";
 dayjs.extend(dayjsBankingDays);
 
 import {
-  AssetDurationTypes,
-  BillActionDatesType,
   billMaturityIssueAuctionCalculations,
-  DateType,
   RealBillsCollectionType,
-  GetAssetDatesType,
-  ImportantBondDatesType,
   TreasurySecurityType,
+  PossibleBillsCollectionType,
 } from "../types";
-
-const getIssueDates = (selectedDate: Dayjs) => {
-  return Object.entries(billMaturityIssueAuctionCalculations).reduce(
-    (acc, [key, {maturityInDays, daysToIssue, auctionDayOfWeek}]) => {
-      let adjustedAuctionDate = selectedDate.subtract(daysToIssue, "days");
-      while (adjustedAuctionDate.day() !== auctionDayOfWeek) {
-        adjustedAuctionDate = adjustedAuctionDate.subtract(1, "day");
-      }
-
-      const actionDates = {
-        issue: adjustedAuctionDate.add(daysToIssue, "days"),
-        maturity: adjustedAuctionDate.add(daysToIssue + maturityInDays, "days"),
-        auction: adjustedAuctionDate,
-      } as BillActionDatesType;
-
-      acc[key as AssetDurationTypes] = actionDates;
-      return acc;
-    },
-    {} as Record<AssetDurationTypes, BillActionDatesType>
-  );
-};
-
-const getAuctionDates: GetAssetDatesType = (selectedDate: Dayjs) => {
-  return Object.entries(billMaturityIssueAuctionCalculations).reduce(
-    (acc, [key, {maturityInDays, daysToIssue, auctionDayOfWeek}]) => {
-      let adjustedDate = selectedDate;
-      while (adjustedDate.day() !== auctionDayOfWeek) {
-        adjustedDate = adjustedDate.subtract(1, "day");
-      }
-
-      const actionDates = {
-        auction: adjustedDate,
-        issue: adjustedDate.add(daysToIssue, "days"),
-        maturity: adjustedDate.add(daysToIssue + maturityInDays, "days"),
-      } as BillActionDatesType;
-
-      acc[key as AssetDurationTypes] = actionDates;
-      return acc;
-    },
-    {} as ImportantBondDatesType
-  );
-};
 
 const createUnpublishedBills = (
   latestMaturityForBills: Dayjs,
   earliestAuctionDate = dayjs()
 ) => {
-  // Based in the selectedDate, find all bills that could be purchased;
-  const futureBillCollection = {};
+  const futureBillCollection: PossibleBillsCollectionType = {};
   const maturities = Object.entries(billMaturityIssueAuctionCalculations);
 
   for (const [
@@ -70,10 +23,7 @@ const createUnpublishedBills = (
   ] of maturities) {
     let adjustedAuctionDate = earliestAuctionDate;
 
-    // if adjusted auction date is current friday and this bill's auction date is thursday,
-    // subtract one day to get to thursday;
     while (adjustedAuctionDate.day() !== auctionDayOfWeek) {
-      // Keep going backwards in the week until the day of the week matches
       adjustedAuctionDate = adjustedAuctionDate.add(1, "days");
     }
 
@@ -105,39 +55,20 @@ const createUnpublishedBills = (
     if (maturityDate.isAfter(latestMaturityForBills)) {
       continue;
     }
-
+    const auctionDate = getDate(adjustedAuctionDate);
     const actionDates = {
       maturityDate: getDate(maturityDate),
       issueDate: getDate(issueDate),
-      auctionDate: getDate(adjustedAuctionDate),
+      auctionDate,
       securityTerm: term,
       maturityInDays,
     };
 
-    const hash = `${term}~${getDate(issueDate)}`;
+    const hash = `${term}~${auctionDate}`;
     futureBillCollection[hash] = actionDates;
   }
 
   return futureBillCollection;
-};
-
-type CalcDatesProps = {
-  selectedDate: Dayjs;
-  dateType: DateType;
-};
-
-export const calcDates = ({
-  selectedDate,
-  dateType,
-}: CalcDatesProps): ImportantBondDatesType => {
-  switch (dateType) {
-    case "maturity":
-      return createUnpublishedBills(selectedDate);
-    case "issue":
-      return getIssueDates(selectedDate);
-    case "auction":
-      return getAuctionDates(selectedDate);
-  }
 };
 
 export const humanReadableDate = (input: string): string => {
@@ -190,8 +121,8 @@ export const sortDurations = (bills: RealBillsCollectionType) => {
 
 export const buildBillLadder = (
   finalMautityDate: Dayjs,
-  realBills: RealBillsCollectionType,
-  firstAuctionDate = dayjs()
+  firstAuctionDate = dayjs(),
+  realBills: RealBillsCollectionType
 ): RealBillsCollectionType[][] => {
   const today = firstAuctionDate;
   const stackOfBillLadders = [];
@@ -199,7 +130,7 @@ export const buildBillLadder = (
     finalMautityDate,
     firstAuctionDate
   );
-  const merged: RealBillsCollectionType = {...possibleBills, ...realBills};
+  const merged = {...possibleBills, ...realBills} as RealBillsCollectionType;
   const sortedDurationsList: string[] = sortDurations(merged).reduce(
     (acc, [key]) => {
       acc.push(key);
@@ -217,7 +148,7 @@ export const buildBillLadder = (
       finalMautityDate,
       dayjs(prevBill.maturityDate)
     );
-    const merged: RealBillsCollectionType = {...possibleBills, ...realBills};
+    const merged = {...possibleBills, ...realBills} as RealBillsCollectionType;
     const sortedDurationsList: string[] = sortDurations(merged).reduce(
       (acc, [key]) => {
         acc.push(key);
@@ -234,7 +165,12 @@ export const buildBillLadder = (
       const isViable =
         diff >= 0 && diff <= 14 && billMaturityDate <= finalMautityDate;
       if (isViable) {
+        const auctionWindow = dayjs().add(7, "days");
+        const unavailable = !bill.cusip
+          ? billAuctionDate.isBefore(auctionWindow)
+          : false;
         // Found a bill, now find other bills to chain after maturity
+        bill.unavailable = unavailable;
         const futureBills = findViableBills(bill);
         bills.push({[currentDuration]: bill} as RealBillsCollectionType);
         bills.push(...futureBills);
@@ -255,6 +191,11 @@ export const buildBillLadder = (
     const isViable =
       diff <= 14 && diff >= 0 && billMaturityDate <= finalMautityDate;
     if (isViable) {
+      const auctionWindow = dayjs().add(7, "days");
+      const unavailable = !bill.cusip
+        ? billAuctionDate.isBefore(auctionWindow)
+        : false;
+      bill.unavailable = unavailable;
       const durationCombinations = findViableBills(bill);
       const viable = [
         {[sortedDurationsList[d]]: bill},
@@ -274,27 +215,6 @@ export const determineStatus = (value: string) => {
       currentValue.isAfter(dayjs()) &&
       !currentValue.isAfter(dayjs().add(7, "days")),
   };
-};
-
-export const collectDateStatuses = (datesAndTypes: RealBillsCollectionType) => {
-  return Object.entries(datesAndTypes)
-    .reduce((acc, [dateType, date]) => {
-      const dateResult = Object.entries(determineStatus(date))
-        .reduce((acc2, [key, status]) => {
-          if (status) {
-            acc2.push(`${dateType.toLowerCase()}${key}`);
-          }
-          return acc2;
-        }, [])
-        .join(" ")
-        .trim();
-
-      if (dateResult) {
-        acc.push(dateResult);
-      }
-      return acc;
-    }, [])
-    .join(" ");
 };
 
 export const getImportantDates = (selectedBills: RealBillsCollectionType[]) => {
@@ -322,79 +242,123 @@ export const getDate = (incoming: Dayjs) => {
   return incoming.format("YYYY-MM-DD");
 };
 
-export const getUpcomingBills = () => {
-  return fetch(
-    "https://www.treasurydirect.gov/TA_WS/securities/upcoming?format=json"
-  )
-    .then((res) => res.json())
-    .then((data) => {
-      return (data as TreasurySecurityType[]).reduce((acc, asset) => {
-        if (/CMB|Bill/i.test(asset.securityType)) {
-          const {
-            cusip,
-            issueDate: originalIssueDate,
-            securityType,
-            securityTerm: securityTermUpper,
-            announcementDate: originalAnnouncementDate,
-            auctionDate: originalAuctionDate,
-            maturityDate: originalMaturityDate,
-            averageMedianDiscountRate,
-            closingTimeNoncompetitive,
-            highDiscountRate,
-            highInvestmentRate,
-            highPrice,
-            noncompetitiveTendersAccepted,
-            pricePer100,
-            securityTermDayMonth,
-            securityTermWeekYear,
-            type,
-            updatedTimestamp,
-          } = asset;
+const billReducer = (
+  acc: RealBillsCollectionType,
+  asset: TreasurySecurityType
+) => {
+  const isOld = dayjs(asset.auctionDate).isBefore(dayjs().subtract(14, "days"));
+  if (!isOld && /CMB|Bill/i.test(asset.securityType)) {
+    const {
+      cusip,
+      issueDate: originalIssueDate,
+      securityType,
+      securityTerm: securityTermUpper,
+      announcementDate: originalAnnouncementDate,
+      auctionDate: originalAuctionDate,
+      averageMedianDiscountRate,
+      closingTimeNoncompetitive,
+      highDiscountRate,
+      highInvestmentRate,
+      highPrice,
+      noncompetitiveTendersAccepted,
+      pricePer100,
+      securityTermDayMonth,
+      securityTermWeekYear,
+      type,
+      updatedTimestamp,
+    } = asset;
 
-          const announcementDate = dayjs(originalAnnouncementDate);
-          const issueDate = dayjs(originalIssueDate);
-          const auctionDate = dayjs(originalAuctionDate);
-          const maturityInDays = parseInt(securityTermDayMonth.split("-")[0]);
-          const daysToAuction = issueDate.diff(auctionDate, "days");
-          const daysToAnnounce = auctionDate.diff(announcementDate, "days");
-          let maturityDate = issueDate.add(maturityInDays, "days");
+    let announcementDate = dayjs(originalAnnouncementDate);
+    let issueDate = dayjs(originalIssueDate);
+    let auctionDate = dayjs(originalAuctionDate);
 
-          if (originalMaturityDate) {
-            maturityDate = dayjs(originalMaturityDate);
-          }
+    const maturityInDays = parseInt(securityTermDayMonth.split("-")[0]);
+    const daysToAuction = issueDate.diff(auctionDate, "days");
+    const daysToAnnounce = auctionDate.diff(announcementDate, "days");
 
-          const securityTerm = securityTermUpper.toLocaleLowerCase();
-          const key = `${securityTerm}~${getDate(issueDate)}`;
+    // if (issueDate.isBefore(dayjs())) {
+    //   issueDate = issueDate.set("year", 2025);
+    //   auctionDate = issueDate.subtract(Math.abs(daysToAuction), "days");
+    //   announcementDate = auctionDate.subtract(
+    //     Math.abs(daysToAnnounce),
+    //     "days"
+    //   );
+    // }
 
-          acc[key] = {
-            cusip,
-            issueDate: getDate(issueDate),
-            maturityDate: getDate(maturityDate),
-            announcementDate: getDate(announcementDate),
-            auctionDate: getDate(auctionDate),
-            securityType,
-            maturityInDays,
-            securityTerm: securityTerm.toLowerCase(),
-            auctionDateYear: 2025,
-            averageMedianDiscountRate,
-            closingTimeNoncompetitive,
-            highDiscountRate,
-            highInvestmentRate,
-            highPrice,
-            noncompetitiveTendersAccepted,
-            pricePer100,
-            securityTermDayMonth,
-            securityTermWeekYear,
-            type,
-            updatedTimestamp,
-          };
+    const maturityDate = issueDate.add(maturityInDays, "days");
+
+    const securityTerm = securityTermUpper.toLocaleLowerCase();
+    const key = `${securityTerm}~${getDate(auctionDate)}`;
+
+    acc[key] = {
+      cusip,
+      issueDate: getDate(issueDate),
+      maturityDate: getDate(maturityDate),
+      announcementDate: getDate(announcementDate),
+      auctionDate: getDate(auctionDate),
+      securityType,
+      maturityInDays,
+      securityTerm: securityTerm.toLowerCase(),
+      averageMedianDiscountRate,
+      closingTimeNoncompetitive,
+      highDiscountRate,
+      highInvestmentRate,
+      highPrice,
+      noncompetitiveTendersAccepted,
+      pricePer100,
+      securityTermDayMonth,
+      securityTermWeekYear,
+      type,
+      updatedTimestamp,
+    };
+  }
+
+  return acc;
+};
+
+const TREASURY_BASE_URL = "https://www.treasurydirect.gov/TA_WS/";
+const SECURITIES_PATH = "securities/";
+const TREASURY_PARAMS = "?format=json";
+const TreasuryURLS = [
+  `${TREASURY_BASE_URL}${SECURITIES_PATH}CMB${TREASURY_PARAMS}`,
+  `${TREASURY_BASE_URL}${SECURITIES_PATH}Bill${TREASURY_PARAMS}`,
+  `${TREASURY_BASE_URL}${SECURITIES_PATH}upcoming${TREASURY_PARAMS}`,
+];
+
+export const getTreasuries = async () => {
+  return await Promise.allSettled(TreasuryURLS.map((url) => fetch(url)))
+    .then(async (promiseList) => {
+      const data: {success: TreasurySecurityType[][]; error: any[]} = {
+        success: [],
+        error: [],
+      };
+      for (let p = 0; p < promiseList.length; p++) {
+        const {value, status, reason} = promiseList[p];
+        if (status === "fulfilled" && value.ok)
+          data.success.push(await value.json());
+        else {
+          console.log(value ? value.statusText : "nothing");
+          data.error.push({
+            reason,
+            url: value?.url,
+            statusText: value?.statusText,
+          });
         }
-
-        return acc;
-      }, {} as RealBillsCollectionType);
+      }
+      return await data;
     })
-    .then((data) => {
-      return data;
+    .then(({error, success}) => {
+      if (error.length) {
+        const words = error.length === 1 ? "error occured" : "errors occured";
+        console.error(`${error.length} ${words}`);
+      }
+      return (success as TreasurySecurityType[][])
+        .map((list) => {
+          return list.reduce(billReducer, {} as RealBillsCollectionType);
+        })
+        .reduce((acc, list) => ({...acc, ...list}), {});
     })
-    .catch((err) => err);
+    .catch((err) => {
+      return err;
+    });
 };
