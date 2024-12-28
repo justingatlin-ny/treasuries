@@ -13,8 +13,7 @@ import {
 import {RealBillsCollectionType} from "../types";
 import {sortLaddersByStartDateThenDuration} from "../utils";
 import {AddCircle, ExpandMore} from "@mui/icons-material";
-import {theme} from "../styles";
-import LadderData from "./LadderData";
+import Ladder from "./Ladder";
 
 const Container = styled(Grid2)``;
 const AccordionDetails = styled(MUIAccordianDetails)`
@@ -53,8 +52,17 @@ const BillLadders: React.FC<{
   return (
     <Container>
       {sortedLadderList.map((billArray, idx) => {
+        const [, {classList, invalid}] = Object.entries(billArray[0])[0];
+        const classes = (classList || "")
+          .concat(invalid ? " unavailable" : "")
+          .trim();
         return (
-          <Accordion defaultExpanded disableGutters key={idx.toString()}>
+          <Accordion
+            className={classes}
+            defaultExpanded
+            disableGutters
+            key={idx.toString()}
+          >
             <Box sx={{display: "flex"}}>
               <AccordionSummary sx={{flexGrow: 1}} expandIcon={<ExpandMore />}>
                 {`Ladder Option ${idx + 1}`}
@@ -67,14 +75,20 @@ const BillLadders: React.FC<{
               >
                 <IconButton
                   name="Add this ladder"
-                  onClick={() => addLadder(billArray)}
+                  onClick={() => {
+                    if (!/unavailable|is-passed/i.test(classes)) {
+                      addLadder(billArray);
+                    }
+                  }}
                 >
-                  <AddCircle color={"success"} />
+                  {!/unavailable|is-passed/i.test(classes) && (
+                    <AddCircle color={"success"} />
+                  )}
                 </IconButton>
               </Box>
             </Box>
             <AccordionDetails>
-              <LadderData billArray={billArray} />
+              <Ladder billArray={billArray} />
             </AccordionDetails>
           </Accordion>
         );

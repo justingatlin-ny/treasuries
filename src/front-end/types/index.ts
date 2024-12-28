@@ -24,7 +24,8 @@ export type TreasurySecurityType = {
   securityTermDayMonth: string;
   securityTermWeekYear: string;
   type: string;
-  unavailable?: boolean;
+  invalid?: boolean;
+  classList: string;
   updatedTimestamp: Date;
 };
 

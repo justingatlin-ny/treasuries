@@ -9,6 +9,7 @@ import {
   TreasurySecurityType,
   PossibleBillsCollectionType,
 } from "../types";
+import getBillClasslist from "./getBillClasslist";
 
 const createUnpublishedBills = (
   latestMaturityForBills: Dayjs,
@@ -139,6 +140,13 @@ export const buildBillLadder = (
     []
   );
 
+  const invalidBill = (bill: TreasurySecurityType) => {
+    const mustHaveCusipDeadline = dayjs().add(7, "days");
+    return (
+      dayjs(bill.auctionDate).isBefore(mustHaveCusipDeadline) && !bill.cusip
+    );
+  };
+
   const findViableBills = (
     prevBill: TreasurySecurityType
   ): RealBillsCollectionType[] => {
@@ -165,12 +173,7 @@ export const buildBillLadder = (
       const isViable =
         diff >= 0 && diff <= 14 && billMaturityDate <= finalMautityDate;
       if (isViable) {
-        const auctionWindow = dayjs().add(7, "days");
-        const unavailable = !bill.cusip
-          ? billAuctionDate.isBefore(auctionWindow)
-          : false;
         // Found a bill, now find other bills to chain after maturity
-        bill.unavailable = unavailable;
         const futureBills = findViableBills(bill);
         bills.push({[currentDuration]: bill} as RealBillsCollectionType);
         bills.push(...futureBills);
@@ -191,11 +194,7 @@ export const buildBillLadder = (
     const isViable =
       diff <= 14 && diff >= 0 && billMaturityDate <= finalMautityDate;
     if (isViable) {
-      const auctionWindow = dayjs().add(7, "days");
-      const unavailable = !bill.cusip
-        ? billAuctionDate.isBefore(auctionWindow)
-        : false;
-      bill.unavailable = unavailable;
+      bill.invalid = invalidBill(bill);
       const durationCombinations = findViableBills(bill);
       const viable = [
         {[sortedDurationsList[d]]: bill},
@@ -268,34 +267,23 @@ const billReducer = (
       updatedTimestamp,
     } = asset;
 
-    let announcementDate = dayjs(originalAnnouncementDate);
-    let issueDate = dayjs(originalIssueDate);
-    let auctionDate = dayjs(originalAuctionDate);
+    const announcementDate = dayjs(originalAnnouncementDate);
+    const issueDate = dayjs(originalIssueDate);
+    const auctionDate = getDate(dayjs(originalAuctionDate));
 
     const maturityInDays = parseInt(securityTermDayMonth.split("-")[0]);
-    const daysToAuction = issueDate.diff(auctionDate, "days");
-    const daysToAnnounce = auctionDate.diff(announcementDate, "days");
-
-    // if (issueDate.isBefore(dayjs())) {
-    //   issueDate = issueDate.set("year", 2025);
-    //   auctionDate = issueDate.subtract(Math.abs(daysToAuction), "days");
-    //   announcementDate = auctionDate.subtract(
-    //     Math.abs(daysToAnnounce),
-    //     "days"
-    //   );
-    // }
 
     const maturityDate = issueDate.add(maturityInDays, "days");
 
     const securityTerm = securityTermUpper.toLocaleLowerCase();
-    const key = `${securityTerm}~${getDate(auctionDate)}`;
+    const key = `${securityTerm}~${auctionDate}`;
 
-    acc[key] = {
+    const bill = {
       cusip,
       issueDate: getDate(issueDate),
       maturityDate: getDate(maturityDate),
       announcementDate: getDate(announcementDate),
-      auctionDate: getDate(auctionDate),
+      auctionDate: auctionDate,
       securityType,
       maturityInDays,
       securityTerm: securityTerm.toLowerCase(),
@@ -310,7 +298,9 @@ const billReducer = (
       securityTermWeekYear,
       type,
       updatedTimestamp,
+      classList: getBillClasslist({auctionDate, closingTimeNoncompetitive}),
     };
+    acc[key] = bill;
   }
 
   return acc;
@@ -333,15 +323,19 @@ export const getTreasuries = async () => {
         error: [],
       };
       for (let p = 0; p < promiseList.length; p++) {
-        const {value, status, reason} = promiseList[p];
-        if (status === "fulfilled" && value.ok)
-          data.success.push(await value.json());
-        else {
-          console.log(value ? value.statusText : "nothing");
+        const promise = promiseList[p];
+        if (promise.status === "fulfilled") {
+          if (promise.value.ok) {
+            data.success.push(await promise.value.json());
+          } else {
+            data.error.push({
+              url: promise.value.url,
+              statusText: promise.value.statusText,
+            });
+          }
+        } else {
           data.error.push({
-            reason,
-            url: value?.url,
-            statusText: value?.statusText,
+            reason: promise.reason,
           });
         }
       }
