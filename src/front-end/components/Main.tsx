@@ -1,7 +1,11 @@
 import {useEffect, useState} from "react";
 import Grid2 from "@mui/material/Grid2";
 import dayjs, {Dayjs} from "dayjs";
-import {SavedLadderPayload, RealBillsCollectionType} from "../types";
+import {
+  SavedLadderPayload,
+  RealBillsCollectionType,
+  TreasurySecurityType,
+} from "../types";
 import {BondControls} from "./BondControls";
 import {buildBillLadder} from "../utils";
 import BillLadders from "./BillLadders";
@@ -80,6 +84,39 @@ const Main = () => {
       }
     }
   }, [maturityDate, auctionDate]);
+
+  useEffect(() => {
+    if (ladderList.length && savedLadders.length) {
+      updateSavedLadders((prev) => {
+        return prev.map((savedLadder) => {
+          const [savedBillId, savedBillData] = Object.entries(
+            savedLadder.selectedBills[0]
+          )[0];
+          const firstBillAuctionDate = dayjs(savedBillData.auctionDate);
+          if (firstBillAuctionDate.isBefore(dayjs().add(12, "days"))) {
+            const correspondingBill = ladderList.find((incomingBond) => {
+              const [incomingId] = Object.entries(incomingBond[0])[0];
+              return savedBillId === incomingId;
+            });
+
+            if (correspondingBill) {
+              const data = correspondingBill[0][savedBillId];
+              savedLadder.invalid = false;
+              savedLadder.selectedBills[0] = {
+                [savedBillId]: {...savedBillData, ...data, invalid: false},
+              };
+            } else {
+              savedLadder.invalid = true;
+              savedLadder.selectedBills[0] = {
+                [savedBillId]: {...savedBillData, invalid: false},
+              };
+            }
+          }
+          return savedLadder;
+        });
+      });
+    }
+  }, [ladderList]);
 
   return (
     <Grid2 container spacing={2} sx={{p: 2}} direction={"column"}>

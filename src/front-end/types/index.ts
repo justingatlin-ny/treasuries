@@ -65,6 +65,7 @@ export type SavedLadderPayload = {
   notes: string;
   monthNeeded: string;
   selectedBills: RealBillsCollectionType[];
+  invalid?: boolean;
 };
 export type AssetDurationTypes =
   keyof typeof billMaturityIssueAuctionCalculations;

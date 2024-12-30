@@ -10,7 +10,7 @@ import {
   IconButton,
   Box,
 } from "@mui/material";
-import {BillType, SavedLadderPayload} from "../types";
+import {SavedLadderPayload} from "../types";
 import {
   determineStatus,
   getImportantDates,
@@ -48,7 +48,7 @@ const SavedLadders: React.FC<{
     );
   return (
     <Container>
-      {savedLadders.map(({id, selectedBills, monthNeeded}, idx) => {
+      {savedLadders.map(({id, selectedBills, monthNeeded, invalid}, idx) => {
         const {firstDate} = getImportantDates(selectedBills);
 
         return (
@@ -66,8 +66,14 @@ const SavedLadders: React.FC<{
                 <Typography>Ladder for</Typography>
                 <Typography
                   sx={{ml: 0.5, mr: 0.5, fontWeight: "bold"}}
+                  color={invalid ? "error" : ""}
                   className="month"
                 >{`${monthNeeded}`}</Typography>
+                {invalid && (
+                  <Typography sx={{pr: 1}} color={"error"} fontWeight={800}>
+                    is invalid
+                  </Typography>
+                )}
                 <Typography>starts</Typography>
                 <Typography
                   className="start-date"

@@ -120,6 +120,11 @@ export const sortDurations = (bills: RealBillsCollectionType) => {
   });
 };
 
+const invalidBill = (bill: TreasurySecurityType) => {
+  const mustHaveCusipDeadline = dayjs().add(7, "days");
+  return dayjs(bill.auctionDate).isBefore(mustHaveCusipDeadline) && !bill.cusip;
+};
+
 export const buildBillLadder = (
   finalMautityDate: Dayjs,
   firstAuctionDate = dayjs(),
@@ -139,13 +144,6 @@ export const buildBillLadder = (
     },
     []
   );
-
-  const invalidBill = (bill: TreasurySecurityType) => {
-    const mustHaveCusipDeadline = dayjs().add(7, "days");
-    return (
-      dayjs(bill.auctionDate).isBefore(mustHaveCusipDeadline) && !bill.cusip
-    );
-  };
 
   const findViableBills = (
     prevBill: TreasurySecurityType
