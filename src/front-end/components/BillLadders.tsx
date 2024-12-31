@@ -26,9 +26,7 @@ export const StyledAccordionSummary = styled((props: AccordionSummaryProps) => (
   backgroundColor: "rgba(0, 0, 0, .08)",
   flexDirection: "row-reverse",
   [`& .${accordionSummaryClasses.expandIconWrapper}.${accordionSummaryClasses.expanded}`]:
-    {
-      // transform: "rotate(180deg)",
-    },
+    {},
   [`& .${accordionSummaryClasses.content}`]: {
     marginLeft: theme.spacing(1),
   },
