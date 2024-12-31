@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import Grid2 from "@mui/material/Grid2";
 import dayjs, {Dayjs} from "dayjs";
 import {
@@ -69,54 +69,71 @@ const Main = () => {
     // onload
     const ladders = window.localStorage.getItem("savedLadders");
     if (ladders) {
-      const parsedLadders = JSON.parse(ladders);
+      const parsedLadders: SavedLadderPayload[] = JSON.parse(ladders);
       updateSavedLadders(parsedLadders);
     }
   }, []);
+
+  const validateSavedBills = useCallback(
+    (treasuryBills: RealBillsCollectionType) => {
+      const daysInFuture = dayjs().add(12, "days");
+      const viableTreasuries = Object.entries(treasuryBills).filter(
+        ([, data]) => {
+          const auctionDate = dayjs(data.auctionDate);
+          return (
+            daysInFuture.isAfter(auctionDate, "date") ||
+            daysInFuture.isSame(auctionDate, "date")
+          );
+        }
+      );
+      if (viableTreasuries.length) {
+        updateSavedLadders((prev) => {
+          return prev.map((savedLadder) => {
+            const [savedBillId, savedBillData] = Object.entries(
+              savedLadder.selectedBills[0]
+            )[0];
+            const firstBillAuctionDate = dayjs(savedBillData.auctionDate);
+
+            if (
+              firstBillAuctionDate.isBefore(daysInFuture, "date") ||
+              firstBillAuctionDate.isSame(daysInFuture, "date")
+            ) {
+              const correspondingBill = treasuryBills[savedBillId];
+              if (correspondingBill) {
+                savedLadder.invalid = false;
+                savedLadder.selectedBills[0] = {
+                  [savedBillId]: {
+                    ...savedBillData,
+                    ...correspondingBill,
+                    invalid: false,
+                  },
+                };
+              } else {
+                savedLadder.invalid = true;
+                savedLadder.selectedBills[0] = {
+                  [savedBillId]: {...savedBillData, invalid: true},
+                };
+              }
+            }
+            return savedLadder;
+          });
+        });
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (maturityDate) {
       if (window?.electronAPI?.getBills) {
         window.electronAPI.getBills().then((realBills) => {
           const ladders = buildBillLadder(maturityDate, auctionDate, realBills);
+          validateSavedBills(realBills);
           updateBondList(ladders);
         });
       }
     }
   }, [maturityDate, auctionDate]);
-
-  useEffect(() => {
-    if (ladderList.length && savedLadders.length) {
-      updateSavedLadders((prev) => {
-        return prev.map((savedLadder) => {
-          const [savedBillId, savedBillData] = Object.entries(
-            savedLadder.selectedBills[0]
-          )[0];
-          const firstBillAuctionDate = dayjs(savedBillData.auctionDate);
-          if (firstBillAuctionDate.isBefore(dayjs().add(12, "days"))) {
-            const correspondingBill = ladderList.find((incomingBond) => {
-              const [incomingId] = Object.entries(incomingBond[0])[0];
-              return savedBillId === incomingId;
-            });
-
-            if (correspondingBill) {
-              const data = correspondingBill[0][savedBillId];
-              savedLadder.invalid = false;
-              savedLadder.selectedBills[0] = {
-                [savedBillId]: {...savedBillData, ...data, invalid: false},
-              };
-            } else {
-              savedLadder.invalid = true;
-              savedLadder.selectedBills[0] = {
-                [savedBillId]: {...savedBillData, invalid: false},
-              };
-            }
-          }
-          return savedLadder;
-        });
-      });
-    }
-  }, [ladderList]);
 
   return (
     <Grid2 container spacing={2} sx={{p: 2}} direction={"column"}>

@@ -97,7 +97,14 @@ const BillLadderDialog: React.FC<{
           const monthNeeded = formJson.monthNeeded;
           const id = performance.now();
 
-          handleClose({notes, monthNeeded, selectedBills, id});
+          handleClose({
+            notes,
+            selectedBills,
+            id,
+            firstDate,
+            finalMaturity,
+            monthNeeded,
+          });
         },
       }}
     >

@@ -56,16 +56,19 @@ const createUnpublishedBills = (
     if (maturityDate.isAfter(latestMaturityForBills)) {
       continue;
     }
+
     const auctionDate = getDate(adjustedAuctionDate);
+    const hash = `${term}~${auctionDate}`;
+
     const actionDates = {
       maturityDate: getDate(maturityDate),
+      id: hash,
       issueDate: getDate(issueDate),
       auctionDate,
       securityTerm: term,
       maturityInDays,
     };
 
-    const hash = `${term}~${auctionDate}`;
     futureBillCollection[hash] = actionDates;
   }
 
@@ -283,6 +286,7 @@ const billReducer = (
       announcementDate: getDate(announcementDate),
       auctionDate: auctionDate,
       securityType,
+      id: key,
       maturityInDays,
       securityTerm: securityTerm.toLowerCase(),
       averageMedianDiscountRate,

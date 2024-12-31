@@ -26,6 +26,7 @@ export type TreasurySecurityType = {
   type: string;
   invalid?: boolean;
   classList: string;
+  id: string;
   updatedTimestamp: Date;
 };
 
@@ -66,6 +67,8 @@ export type SavedLadderPayload = {
   monthNeeded: string;
   selectedBills: RealBillsCollectionType[];
   invalid?: boolean;
+  firstDate: Dayjs;
+  finalMaturity: Dayjs;
 };
 export type AssetDurationTypes =
   keyof typeof billMaturityIssueAuctionCalculations;

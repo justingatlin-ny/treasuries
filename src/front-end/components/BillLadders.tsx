@@ -15,12 +15,12 @@ import {sortLaddersByStartDateThenDuration} from "../utils";
 import {AddCircle, ExpandMore} from "@mui/icons-material";
 import Ladder from "./Ladder";
 
-const Container = styled(Grid2)``;
-const AccordionDetails = styled(MUIAccordianDetails)`
+export const StyledContainer = styled(Grid2)``;
+export const StyledAccordionDetails = styled(MUIAccordianDetails)`
   padding: 0;
 `;
 
-const AccordionSummary = styled((props: AccordionSummaryProps) => (
+export const StyledAccordionSummary = styled((props: AccordionSummaryProps) => (
   <MuiAccordionSummary {...props} />
 ))(({theme}) => ({
   backgroundColor: "rgba(0, 0, 0, .08)",
@@ -40,19 +40,22 @@ const BillLadders: React.FC<{
 }> = ({ladderList, addLadder}) => {
   if (ladderList.length === 0) {
     return (
-      <Container>
+      <StyledContainer>
         <Typography textAlign={"center"}>
           No viable ladders can be created with the dates provided.
         </Typography>
-      </Container>
+      </StyledContainer>
     );
   }
   const sortedLadderList: RealBillsCollectionType[][] =
     sortLaddersByStartDateThenDuration(ladderList);
+  let ladderOption = 0;
   return (
-    <Container>
+    <StyledContainer>
       {sortedLadderList.map((billArray, idx) => {
         const [, {classList, invalid}] = Object.entries(billArray[0])[0];
+        if (invalid) return null;
+        ladderOption++;
         const classes = (classList || "")
           .concat(invalid ? " unavailable" : "")
           .trim();
@@ -64,9 +67,12 @@ const BillLadders: React.FC<{
             key={idx.toString()}
           >
             <Box sx={{display: "flex"}}>
-              <AccordionSummary sx={{flexGrow: 1}} expandIcon={<ExpandMore />}>
-                {`Ladder Option ${idx + 1}`}
-              </AccordionSummary>
+              <StyledAccordionSummary
+                sx={{flexGrow: 1}}
+                expandIcon={<ExpandMore />}
+              >
+                {`Ladder Option ${ladderOption}`}
+              </StyledAccordionSummary>
               <Box
                 sx={{
                   backgroundColor: "rgba(0, 0, 0, .08)",
@@ -87,13 +93,13 @@ const BillLadders: React.FC<{
                 </IconButton>
               </Box>
             </Box>
-            <AccordionDetails>
+            <StyledAccordionDetails>
               <Ladder billArray={billArray} />
-            </AccordionDetails>
+            </StyledAccordionDetails>
           </Accordion>
         );
       })}
-    </Container>
+    </StyledContainer>
   );
 };
 

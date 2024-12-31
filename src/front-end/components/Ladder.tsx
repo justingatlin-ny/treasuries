@@ -67,17 +67,19 @@ const RowContentStyles = styled(RowStyles)`
   &.is-close {
     background-color: yellow;
   }
-  .passed-brokerage-deadline,
   .passed-brokerage-deadline {
     font-weight: bold;
   }
-  .is-today {
+  &.is-today {
     background-color: #adffad;
   }
   &.unavailable,
-  &.is-pased {
+  &.auction-passed {
     text-decoration: line-through;
     background-color: #ff0000c7;
+    * {
+      font-weight: normal;
+    }
   }
 `;
 
