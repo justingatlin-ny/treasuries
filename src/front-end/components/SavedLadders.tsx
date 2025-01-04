@@ -1,6 +1,8 @@
+import React, {useState} from "react";
+import PlaylistAddIcon from "@mui/icons-material/PlaylistAdd";
 import {Typography, Accordion, IconButton, Box} from "@mui/material";
 import {SavedLadderPayload} from "../types";
-
+import NotesIcon from "@mui/icons-material/Notes";
 import {ExpandMore, RemoveCircle} from "@mui/icons-material";
 import Ladder from "./Ladder";
 import dayjs from "dayjs";
@@ -9,10 +11,12 @@ import {
   StyledAccordionSummary,
   StyledContainer,
 } from "./BillLadders";
+import Notes from "./Notes";
 
 const SavedLadders: React.FC<{
   savedLadders: SavedLadderPayload[];
   removeLadder: (id: number) => void;
+  updateNote: (id: number, newNote: string) => void;
 }> = ({savedLadders, removeLadder}) => {
   if (!savedLadders.length)
     return (
@@ -20,16 +24,33 @@ const SavedLadders: React.FC<{
         <Typography textAlign={"center"}>No saved ladders</Typography>
       </StyledContainer>
     );
+  const [expanded, setExpanded] = useState<{[key: number]: boolean}>({});
+  const handleChange = (id: number) => () => {
+    setExpanded((prev) => ({
+      ...prev,
+      [id]: prev[id] ? false : true,
+    }));
+  };
   return (
     <StyledContainer>
       {savedLadders.map(
-        (
-          {id, selectedBills, monthNeeded, invalid, firstDate: firstDateString},
-          idx
-        ) => {
+        ({
+          id,
+          selectedBills,
+          monthNeeded,
+          notes,
+          invalid,
+          firstDate: firstDateString,
+        }) => {
           const firstDate = dayjs(firstDateString);
           return (
-            <Accordion disableGutters key={idx.toString()}>
+            <Accordion
+              disableGutters
+              key={id}
+              expanded={expanded[id] === true}
+              onClick={undefined}
+              onChange={handleChange(id)}
+            >
               <Box sx={{display: "flex"}}>
                 <StyledAccordionSummary
                   sx={{flexGrow: 1}}
@@ -58,15 +79,20 @@ const SavedLadders: React.FC<{
                     alignContent: "center",
                   }}
                 >
-                  <IconButton
-                    name="Add this ladder"
-                    onClick={() => removeLadder(id)}
-                  >
+                  <IconButton name="Notes" onClick={handleChange(id)}>
+                    {notes ? (
+                      <NotesIcon color={"action"} />
+                    ) : (
+                      <PlaylistAddIcon color={"success"} />
+                    )}
+                  </IconButton>
+                  <IconButton name="Remove" onClick={() => removeLadder(id)}>
                     <RemoveCircle color={"error"} />
                   </IconButton>
                 </Box>
               </Box>
               <StyledAccordionDetails>
+                <Notes notes={notes} id={id} />
                 <Ladder billArray={selectedBills} />
               </StyledAccordionDetails>
             </Accordion>

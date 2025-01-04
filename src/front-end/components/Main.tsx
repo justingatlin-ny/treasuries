@@ -72,7 +72,7 @@ const Main = () => {
 
   const validateSavedBills = useCallback(
     (treasuryBills: RealBillsCollectionType) => {
-      const daysInFuture = dayjs().add(12, "days");
+      const daysInFuture = dayjs().add(7, "days");
       const viableTreasuries = Object.entries(treasuryBills).filter(
         ([, data]) => {
           const auctionDate = dayjs(data.auctionDate);

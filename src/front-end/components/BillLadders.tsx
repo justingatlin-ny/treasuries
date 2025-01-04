@@ -80,12 +80,12 @@ const BillLadders: React.FC<{
                 <IconButton
                   name="Add this ladder"
                   onClick={() => {
-                    if (!/unavailable|is-passed/i.test(classes)) {
+                    if (!/unavailable|auction-passed/i.test(classes)) {
                       addLadder(billArray);
                     }
                   }}
                 >
-                  {!/unavailable|is-passed/i.test(classes) && (
+                  {!/unavailable|auction-passed/i.test(classes) && (
                     <AddCircle color={"success"} />
                   )}
                 </IconButton>
