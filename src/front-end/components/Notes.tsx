@@ -2,6 +2,7 @@ import React, {MouseEvent, ChangeEvent, useRef, useState} from "react";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
 import {Button, IconButton, styled, TextField, Typography} from "@mui/material";
 import {SavedLadderPayload} from "../types";
+import {UUID} from "crypto";
 
 const StyledNotes = styled("div")`
   * {
@@ -10,7 +11,7 @@ const StyledNotes = styled("div")`
   margin: 5px 20px;
 `;
 
-const Notes: React.FC<{notes: string; id: number}> = ({notes, id}) => {
+const Notes: React.FC<{notes: string; id: UUID}> = ({notes, id}) => {
   const [isEditing, setIsEditing] = useState(false);
   const originalText = useRef(notes);
   const [text, setText] = useState(notes);
@@ -21,9 +22,7 @@ const Notes: React.FC<{notes: string; id: number}> = ({notes, id}) => {
   };
 
   const handleSave = (event: MouseEvent<HTMLButtonElement>) => {
-    const {
-      target: {name},
-    } = event;
+    const {name} = event.currentTarget;
     const vettedText = name === "delete" ? "" : text;
 
     const savedLadders: SavedLadderPayload[] = JSON.parse(
@@ -37,22 +36,22 @@ const Notes: React.FC<{notes: string; id: number}> = ({notes, id}) => {
       return ladder;
     });
     window.localStorage.setItem("savedLadders", JSON.stringify(updatedLadders));
-    setIsEditing(false);
     setText(vettedText);
+    setIsEditing(false);
   };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     setText(event.target.value);
   };
 
-  const handleBlur = (event: MouseEvent<HTMLButtonElement>) => {
+  const handleBlur = () => {
     setText(originalText.current);
     setIsEditing(false);
   };
 
   return (
     <StyledNotes>
-      {!notes && !isEditing ? (
+      {!text && !isEditing ? (
         "No notes"
       ) : isEditing ? (
         <>

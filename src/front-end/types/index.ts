@@ -1,6 +1,7 @@
 import {type MouseEvent} from "react";
 import {Grid2Props} from "@mui/material";
 import {Dayjs} from "dayjs";
+import {UUID} from "crypto";
 
 export type DateType = "maturity" | "auction" | "issue";
 export type DateSelectionType = "maturity" | "auction";
@@ -62,7 +63,7 @@ export type ImportantBondDatesType = Record<string, BillActionDatesType>;
 export type GetAssetDatesType = (selectedDate: Dayjs) => ImportantBondDatesType;
 
 export type SavedLadderPayload = {
-  id: DOMHighResTimeStamp;
+  id: UUID;
   notes: string;
   monthNeeded: string;
   selectedBills: RealBillsCollectionType[];

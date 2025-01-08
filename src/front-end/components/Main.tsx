@@ -7,6 +7,7 @@ import {buildBillLadder} from "../utils";
 import BillLadders from "./BillLadders";
 import BillLadderDialog from "./BillLadderDialog";
 import SavedLadders from "./SavedLadders";
+import {UUID} from "crypto";
 
 const Main = () => {
   const [open, setOpen] = useState(false);
@@ -44,7 +45,7 @@ const Main = () => {
     setOpen(false);
   };
 
-  const removeLadder = (id: number) => {
+  const removeLadder = (id: UUID) => {
     // this needs to manipulate localstorage then trigger an event
     updateSavedLadders((prev) => {
       const ladders = prev.filter((ladder) => ladder.id !== id);
@@ -72,7 +73,7 @@ const Main = () => {
 
   const validateSavedBills = useCallback(
     (treasuryBills: RealBillsCollectionType) => {
-      const daysInFuture = dayjs().add(7, "days");
+      const daysInFuture = dayjs().add(10, "days");
       const viableTreasuries = Object.entries(treasuryBills).filter(
         ([, data]) => {
           const auctionDate = dayjs(data.auctionDate);
@@ -84,7 +85,7 @@ const Main = () => {
       );
       if (viableTreasuries.length) {
         updateSavedLadders((prev) => {
-          return prev.map((savedLadder) => {
+          const updatedLadders = prev.map((savedLadder) => {
             const [savedBillId, savedBillData] = Object.entries(
               savedLadder.selectedBills[0]
             )[0];
@@ -113,6 +114,8 @@ const Main = () => {
             }
             return savedLadder;
           });
+          updateStorage(updatedLadders);
+          return updatedLadders;
         });
       }
     },
