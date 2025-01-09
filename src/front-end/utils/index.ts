@@ -1,8 +1,3 @@
-import dayjs, {Dayjs} from "dayjs";
-import dayjsBankingDays from "dayjs-banking-days";
-
-dayjs.extend(dayjsBankingDays);
-
 import {
   billMaturityIssueAuctionCalculations,
   RealBillsCollectionType,
@@ -10,6 +5,10 @@ import {
   PossibleBillsCollectionType,
 } from "../types";
 import getBillClasslist from "./getBillClasslist";
+import dayjs, {Dayjs} from "dayjs";
+import dayjsBankingDays from "dayjs-banking-days";
+
+dayjs.extend(dayjsBankingDays);
 
 const createUnpublishedBills = (
   latestMaturityForBills: Dayjs,
@@ -317,10 +316,23 @@ const TreasuryURLS = [
   `${TREASURY_BASE_URL}${SECURITIES_PATH}upcoming${TREASURY_PARAMS}`,
 ];
 
-export const getTreasuries = async () => {
+type TreasuryErrorType = {
+  url?: string;
+  statusText?: string;
+  reason: string;
+  timestamp: string;
+};
+
+export const getTreasuries = async (): Promise<{
+  success: RealBillsCollectionType;
+  error: TreasuryErrorType[];
+}> => {
   return await Promise.allSettled(TreasuryURLS.map((url) => fetch(url)))
     .then(async (promiseList) => {
-      const data: {success: TreasurySecurityType[][]; error: any[]} = {
+      const data: {
+        success: TreasurySecurityType[][];
+        error: TreasuryErrorType[];
+      } = {
         success: [],
         error: [],
       };
@@ -328,31 +340,32 @@ export const getTreasuries = async () => {
         const promise = promiseList[p];
         if (promise.status === "fulfilled") {
           if (promise.value.ok) {
-            data.success.push(await promise.value.json());
+            const json = await promise.value.json();
+            data.success.push(json);
           } else {
+            const {url, statusText} = promise.value;
             data.error.push({
-              url: promise.value.url,
-              statusText: promise.value.statusText,
+              url,
+              reason: statusText,
+              timestamp: new Date().toISOString(),
             });
           }
         } else {
           data.error.push({
             reason: promise.reason,
+            timestamp: new Date().toISOString(),
           });
         }
       }
       return await data;
     })
-    .then(({error, success}) => {
-      if (error.length) {
-        const words = error.length === 1 ? "error occured" : "errors occured";
-        console.error(`${error.length} ${words}`);
-      }
-      return (success as TreasurySecurityType[][])
+    .then(({error, success: incomingSuccess}) => {
+      const success = (incomingSuccess as TreasurySecurityType[][])
         .map((list) => {
           return list.reduce(billReducer, {} as RealBillsCollectionType);
         })
         .reduce((acc, list) => ({...acc, ...list}), {});
+      return {error, success};
     })
     .catch((err) => {
       return err;
