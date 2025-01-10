@@ -1,5 +1,5 @@
 import {
-  POSSIBLE_BILL_LIST,
+  POSSIBLE_BILL_CALCULATIONS,
   TreasurySecurityType,
   PossibleBillType,
   NativeTreasuryAssetType,
@@ -13,10 +13,10 @@ dayjs.extend(dayjsBankingDays);
 
 const createUnpublishedBills = (
   latestMaturityForBills: Dayjs,
-  earliestAuctionDate = dayjs()
+  earliestAuctionDate: Dayjs
 ) => {
   const futureBillCollection: PossibleBillType[] = [];
-  const maturities = POSSIBLE_BILL_LIST;
+  const maturities = POSSIBLE_BILL_CALCULATIONS;
 
   for (const {
     maturityInDays,
@@ -142,7 +142,7 @@ const mergeBills = (
 export const buildBillLadders = (
   finalMautityDate: Dayjs,
   firstAuctionDate = dayjs(),
-  realBills: TreasurySecurityType[] = []
+  realBills: TreasurySecurityType[]
 ): RealORPossibleBillsType[][] => {
   const today = firstAuctionDate;
   const stackOfBillLadders = [] as RealORPossibleBillsType[][];
@@ -212,9 +212,7 @@ export const determineStatus = (value: string) => {
   };
 };
 
-export const getImportantDates = (
-  selectedBills: RealORPossibleBillsType[] = []
-) => {
+export const getImportantDates = (selectedBills: RealORPossibleBillsType[]) => {
   let firstDate: Dayjs;
 
   const finalMaturity = selectedBills.reduce((acc, bill) => {

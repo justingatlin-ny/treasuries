@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import {
   buildBillLadders,
   determineStatus,
@@ -8,85 +9,21 @@ import {
   sortBillsByDate,
 } from "./";
 import {
-  mockPastBILL,
-  mockPastCMB,
-  mockMerged2,
-  mockUpcoming,
   mockBillLadder,
-} from "./mocks/mockTreasuries";
-import {mockMerged, mockNativeTreasuriesMerged} from "./mocks/mockMerged";
+  possibleHoliday,
+  randomBillsList,
+} from "../mocks/mockTreasuries";
+import {mockMerged} from "../mocks/mockMerged";
 import {
   mockSavedLadders,
   selected2,
   selectedBills,
-} from "./mocks/mockSavedLadders";
+} from "../mocks/mockSavedLadders";
 import {RealORPossibleBillsType} from "../types";
-import {getTreasuries} from "../back-end/getTreasuries";
 
-describe("getTreasuries()", () => {
-  afterEach(() => {
-    jest.useRealTimers();
-  });
-
-  it("should return successful treasuries", async () => {
-    jest.useFakeTimers().setSystemTime(new Date("2025-01-08T22:00:00.000Z"));
-    jest
-      .spyOn(global, "fetch")
-      .mockImplementationOnce(
-        jest.fn().mockResolvedValue({
-          ok: true,
-          json: () => Promise.resolve(mockPastCMB),
-        })
-      )
-      .mockImplementationOnce(
-        jest.fn().mockResolvedValue({
-          ok: true,
-          json: () => Promise.resolve(mockPastBILL),
-        })
-      )
-      .mockImplementationOnce(
-        jest.fn().mockResolvedValue({
-          ok: true,
-          json: () => Promise.resolve(mockUpcoming),
-        })
-      ) as jest.Mock;
-    const {error, success} = await getTreasuries();
-    expect(error).toHaveLength(0);
-    expect(success).toEqual(mockNativeTreasuriesMerged);
-  });
-
-  it("should return 2 failures", async () => {
-    jest.useFakeTimers().setSystemTime(new Date("2025-01-08T22:00:00.000Z"));
-    jest
-      .spyOn(global, "fetch")
-      .mockImplementationOnce(jest.fn().mockRejectedValue("promise rejected"))
-      .mockImplementationOnce(
-        jest.fn().mockResolvedValue({
-          ok: false,
-          statusText: "mock failure 2",
-          url: "mock url 2",
-        })
-      )
-      .mockImplementationOnce(
-        jest.fn().mockResolvedValue({
-          ok: true,
-          json: () => Promise.resolve(mockUpcoming),
-        })
-      ) as jest.Mock;
-    const {error, success} = await getTreasuries();
-    expect(error).toHaveLength(2);
-
-    expect(error[0].reason).toEqual("promise rejected");
-    expect(error[0].url).toBeUndefined();
-    expect(new Date(error[0].timestamp).getTime()).not.toBeNaN();
-
-    expect(error[1].reason).toEqual("mock failure 2");
-    expect(error[1].url).toEqual("mock url 2");
-    expect(new Date(error[1].timestamp).getTime()).not.toBeNaN();
-
-    expect(success).toEqual(mockMerged2);
-  });
-});
+const fail = (message: string) => {
+  throw new Error(message);
+};
 
 describe("utils", () => {
   it("should return a human readable date", () => {
@@ -118,6 +55,14 @@ describe("utils", () => {
     expect(importantDates.monthNeeded.format("MMMM YYYY")).toEqual(
       "September 2025"
     );
+
+    expect(
+      getImportantDates(randomBillsList[3]).monthNeeded.format("MMMM YYYY")
+    ).toEqual("May 2025");
+
+    expect(
+      getImportantDates(possibleHoliday[5]).monthNeeded.format("MMMM YYYY")
+    ).toEqual("April 2025");
   });
 
   it("should determine the status of the auction date", () => {
@@ -227,5 +172,44 @@ describe("utils", () => {
     );
     expect(billLadder).toHaveLength(3);
     expect(billLadder).toEqual(mockBillLadder);
+  });
+
+  it("should create bills auctioned on or after Feb 1, 2025 maturing on or before 56 days in the future", () => {
+    jest.useFakeTimers().setSystemTime(new Date("2024-12-22T06:00:00.000Z"));
+    const startDate = dayjs("2025-02-01T06:00:00.000Z");
+    const finalMaturity = startDate.add(56, "days");
+    const billLadders = buildBillLadders(finalMaturity, startDate, mockMerged);
+
+    billLadders.forEach((ladder) => {
+      ladder.forEach(({auctionDate, maturityDate}) => {
+        if (dayjs(auctionDate).isBefore(startDate)) {
+          fail(`auctionDate ${auctionDate} is before ${startDate}.`);
+        } else if (dayjs(maturityDate).isAfter(finalMaturity)) {
+          fail(`maturityDate ${maturityDate} is after ${finalMaturity} .`);
+        }
+      });
+    });
+  });
+
+  it("should not create bills auctioned on holidays", () => {
+    jest.useFakeTimers().setSystemTime(new Date("2024-12-25T06:00:00.000Z"));
+    const billLadders = buildBillLadders(
+      dayjs("2024-12-18T06:00:00.000Z").add(135, "days"),
+      undefined,
+      mockMerged
+    );
+
+    // Need to check weekends and holidays for each date;
+    billLadders.forEach((ladder) => {
+      ladder.forEach(({auctionDate, maturityDate, issueDate}) => {
+        if (dayjs(auctionDate).isBankingHoliday()) {
+          fail(`auctionDate ${auctionDate} is on a holiday.`);
+        } else if (dayjs(maturityDate).isBankingHoliday()) {
+          fail(`maturityDate ${maturityDate} is on a holiday.`);
+        } else if (dayjs(issueDate).isBankingHoliday()) {
+          fail(`issueDate ${issueDate} is on a holiday.`);
+        }
+      });
+    });
   });
 });

@@ -31,7 +31,7 @@ export type TreasurySecurityType = {
   updatedTimestamp: string;
 };
 
-export const POSSIBLE_BILL_LIST = [
+export const POSSIBLE_BILL_CALCULATIONS = [
   {
     securityTerm: "4-week",
     maturityInDays: 28,

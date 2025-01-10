@@ -17,12 +17,15 @@ const TreasuryURLS = [
 let lastPull: Date;
 let previousData: TreasurySecurityType[] = [];
 
-export const getTreasuries = async (): Promise<{
+export const getTreasuries = async (
+  force?: boolean
+): Promise<{
   success: TreasurySecurityType[];
   error: TreasuryErrorType[];
 }> => {
   const fifteenMinuesAgo = new Date(Date.now() - 15 * 60 * 1000);
-  if (previousData.length && lastPull > fifteenMinuesAgo) {
+
+  if (!force && previousData.length && lastPull > fifteenMinuesAgo) {
     return Promise.resolve({success: previousData, error: []});
   }
   return await Promise.allSettled(TreasuryURLS.map((url) => fetch(url)))
@@ -63,9 +66,5 @@ export const getTreasuries = async (): Promise<{
       lastPull = now;
       previousData = success;
       return {error, success};
-    })
-
-    .catch((err) => {
-      return err;
     });
 };
