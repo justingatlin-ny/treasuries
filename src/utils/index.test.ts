@@ -1,22 +1,27 @@
 import dayjs from "dayjs";
 import {
+  buildBillLadders,
   determineStatus,
   getDate,
   getImportantDates,
-  getTreasuries,
   humanReadableDate,
   sortBillsByDate,
-  sortLaddersByStartDateThenDuration,
 } from "./";
 import {
   mockPastBILL,
   mockPastCMB,
-  mockMerged,
   mockMerged2,
   mockUpcoming,
+  mockBillLadder,
 } from "./mocks/mockTreasuries";
-import {mockSavedLadders, selectedBills} from "./mocks/mockSavedLadders";
-import {RealBillsCollectionType} from "../types";
+import {mockMerged, mockNativeTreasuriesMerged} from "./mocks/mockMerged";
+import {
+  mockSavedLadders,
+  selected2,
+  selectedBills,
+} from "./mocks/mockSavedLadders";
+import {RealORPossibleBillsType} from "../types";
+import {getTreasuries} from "../back-end/getTreasuries";
 
 describe("getTreasuries()", () => {
   afterEach(() => {
@@ -47,7 +52,7 @@ describe("getTreasuries()", () => {
       ) as jest.Mock;
     const {error, success} = await getTreasuries();
     expect(error).toHaveLength(0);
-    expect(success).toEqual(mockMerged);
+    expect(success).toEqual(mockNativeTreasuriesMerged);
   });
 
   it("should return 2 failures", async () => {
@@ -95,7 +100,7 @@ describe("utils", () => {
   });
 
   it("should return the important dates from the bills", () => {
-    const importantDates = getImportantDates(mockSavedLadders[1].selectedBills);
+    const importantDates = getImportantDates(mockSavedLadders[2].selectedBills);
     const keys = Object.keys(importantDates);
     expect(keys).toHaveLength(3);
     expect(keys).toEqual(
@@ -106,9 +111,9 @@ describe("utils", () => {
     expect(values).toHaveLength(3);
     expect(values.every((date) => date.isValid())).toBeTruthy();
 
-    expect(importantDates.firstDate.format("YYYY-MM-DD")).toEqual("2025-01-09");
+    expect(importantDates.firstDate.format("YYYY-MM-DD")).toEqual("2025-01-14");
     expect(importantDates.finalMaturity.format("YYYY-MM-DD")).toEqual(
-      "2025-08-28"
+      "2025-08-21"
     );
     expect(importantDates.monthNeeded.format("MMMM YYYY")).toEqual(
       "September 2025"
@@ -137,59 +142,90 @@ describe("utils", () => {
     });
   });
 
-  it("should sort bils by auction date", () => {
+  it("should sort bills by auction date", () => {
     jest.useFakeTimers().setSystemTime(new Date("2025-01-08T22:00:00.000Z"));
-    const sorted = sortBillsByDate(
-      selectedBills as unknown as RealBillsCollectionType[]
-    );
+    const sorted = sortBillsByDate([
+      ...selected2,
+      ...selectedBills,
+    ] as RealORPossibleBillsType[]);
 
     expect(sorted).toEqual([
       {
-        "8-week~2025-01-09": {
-          cusip: "912797NQ6",
-          issueDate: "2025-01-14",
-          maturityDate: "2025-03-11",
-          announcementDate: "2025-01-07",
-          auctionDate: "2025-01-09",
-          securityType: "Bill",
-          id: "8-week~2025-01-09",
-          maturityInDays: 56,
-          securityTerm: "8-week",
-          closingTimeNoncompetitive: "11:00 AM",
-          noncompetitiveTendersAccepted: "Yes",
-          securityTermDayMonth: "56-Day",
-          securityTermWeekYear: "8-Week",
-          type: "Bill",
-          classList: "is-close",
-          invalid: false,
-        },
+        cusip: "912797KS5",
+        issueDate: "2025-01-16",
+        maturityDate: "2025-04-17",
+        announcementDate: "2025-01-09",
+        auctionDate: "2025-01-13",
+        securityType: "Bill",
+        id: "13-week~2025-01-13",
+        maturityInDays: 91,
+        securityTerm: "13-week",
+        averageMedianDiscountRate: "",
+        closingTimeNoncompetitive: "11:00 AM",
+        highDiscountRate: "",
+        highInvestmentRate: "",
+        highPrice: "",
+        noncompetitiveTendersAccepted: "Yes",
+        pricePer100: "",
+        securityTermDayMonth: "91-Day",
+        securityTermWeekYear: "13-Week",
+        type: "Bill",
+        updatedTimestamp: "2025-01-09T11:02:08",
+        classList: "",
+        invalid: false,
       },
       {
-        "17-week~2025-03-12": {
-          maturityDate: "2025-07-15",
-          id: "17-week~2025-03-12",
-          issueDate: "2025-03-18",
-          auctionDate: "2025-03-12",
-          securityTerm: "17-week",
-          maturityInDays: 119,
-        },
+        maturityDate: "2025-04-08",
+        id: "8-week~2025-02-06",
+        issueDate: "2025-02-11",
+        auctionDate: "2025-02-06",
+        securityTerm: "8-week",
+        maturityInDays: 56,
+        invalid: false,
       },
       {
-        "42-day~2025-07-15": {
-          maturityDate: "2025-08-28",
-          id: "42-day~2025-07-15",
-          issueDate: "2025-07-17",
-          auctionDate: "2025-07-15",
-          securityTerm: "42-day",
-          maturityInDays: 42,
-        },
+        maturityDate: "2025-08-12",
+        id: "17-week~2025-04-09",
+        issueDate: "2025-04-15",
+        auctionDate: "2025-04-09",
+        securityTerm: "17-week",
+        maturityInDays: 119,
+      },
+      {
+        maturityDate: "2025-08-26",
+        id: "17-week~2025-04-23",
+        issueDate: "2025-04-29",
+        auctionDate: "2025-04-23",
+        securityTerm: "17-week",
+        maturityInDays: 119,
+      },
+      {
+        maturityDate: "2025-09-25",
+        id: "42-day~2025-08-12",
+        issueDate: "2025-08-14",
+        auctionDate: "2025-08-12",
+        securityTerm: "42-day",
+        maturityInDays: 42,
+      },
+      {
+        maturityDate: "2025-09-30",
+        id: "4-week~2025-08-28",
+        issueDate: "2025-09-02",
+        auctionDate: "2025-08-28",
+        securityTerm: "4-week",
+        maturityInDays: 28,
       },
     ]);
   });
 
-  it("should sort by start date then duration", () => {
-    // const arr =
-    // const sorted = sortLaddersByStartDateThenDuration(mockMerged)
-    // expect(sorted).toBeTruthy();
+  it("should create possible bills", () => {
+    jest.useFakeTimers().setSystemTime(new Date("2025-01-08T22:00:00.000Z"));
+    const billLadder = buildBillLadders(
+      dayjs("2025-03-31T22:00:00.000Z"),
+      dayjs(),
+      mockMerged
+    );
+    expect(billLadder).toHaveLength(3);
+    expect(billLadder).toEqual(mockBillLadder);
   });
 });

@@ -1,5 +1,5 @@
 import {styled, Grid2, createTheme} from "@mui/material";
-import {BondDisplayContainerProps} from "../types";
+import {BondDisplayContainerProps} from "../../types";
 import {red} from "@mui/material/colors";
 
 export const BondDisplayContainer = styled(Grid2, {

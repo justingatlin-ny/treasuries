@@ -1,7 +1,9 @@
+import {TreasurySecurityType} from "./types";
+
 export declare global {
   interface Window {
     electronAPI: {
-      getBills: () => Promise<RealBillsCollectionType>;
+      getBills: () => Promise<TreasurySecurityType[]>;
       createInvite: (ladder: SavedLadderPayload) => Promise<boolean>;
     };
   }

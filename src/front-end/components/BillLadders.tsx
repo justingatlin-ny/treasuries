@@ -10,10 +10,9 @@ import {
   IconButton,
   Box,
 } from "@mui/material";
-import {RealBillsCollectionType} from "../types";
-import {sortLaddersByStartDateThenDuration} from "../utils";
 import {AddCircle, ExpandMore} from "@mui/icons-material";
 import Ladder from "./Ladder";
+import {RealORPossibleBillsType, TreasurySecurityType} from "../../types";
 
 export const StyledContainer = styled(Grid2)``;
 export const StyledAccordionDetails = styled(MUIAccordianDetails)`
@@ -33,10 +32,10 @@ export const StyledAccordionSummary = styled((props: AccordionSummaryProps) => (
 }));
 
 const BillLadders: React.FC<{
-  ladderList: RealBillsCollectionType[][];
-  addLadder: (bills: RealBillsCollectionType[]) => void;
-}> = ({ladderList, addLadder}) => {
-  if (ladderList.length === 0) {
+  currentLadderOptions: RealORPossibleBillsType[][];
+  addLadder: React.Dispatch<React.SetStateAction<RealORPossibleBillsType[]>>;
+}> = ({currentLadderOptions, addLadder}) => {
+  if (currentLadderOptions.length === 0) {
     return (
       <StyledContainer>
         <Typography textAlign={"center"}>
@@ -45,13 +44,12 @@ const BillLadders: React.FC<{
       </StyledContainer>
     );
   }
-  const sortedLadderList: RealBillsCollectionType[][] =
-    sortLaddersByStartDateThenDuration(ladderList);
+
   let ladderOption = 0;
   return (
     <StyledContainer>
-      {sortedLadderList.map((billArray, idx) => {
-        const [, {classList, invalid}] = Object.entries(billArray[0])[0];
+      {currentLadderOptions.map((billArray, idx) => {
+        const {classList, invalid} = billArray[0] as TreasurySecurityType;
         if (invalid) return null;
         ladderOption++;
         const classes = (classList || "")

@@ -1,13 +1,17 @@
 import React from "react";
 import {Box, styled} from "@mui/material";
-import {RealBillsCollectionType, TreasurySecurityType} from "../types";
-import {humanReadableDate} from "../utils";
+import {
+  RealORPossibleBillsType,
+  PossibleBillType,
+  TreasurySecurityType,
+} from "../../types";
+import {humanReadableDate} from "../../utils";
 
 type ColumnsType = {
-  field: keyof TreasurySecurityType;
+  field: keyof PossibleBillType | keyof TreasurySecurityType;
   headerName: string;
   flex: number;
-  valueGetter?: (value: any) => string;
+  valueGetter?: (value: unknown) => string;
 }[];
 
 const cols: ColumnsType = [
@@ -41,19 +45,10 @@ const StyledCell = styled("div")`
     border-right: none;
   }
 `;
-
-const getUsableBillDetails = (bill: RealBillsCollectionType) => {
-  const [id, data] = Object.entries(bill)[0];
-  return {
-    id,
-    ...data,
-  };
-};
-
 interface ICustomDataGridProps {
-  rows: TreasurySecurityType[];
+  rows: RealORPossibleBillsType[];
   columns: ColumnsType;
-  getRowClassName?: (params: {row: TreasurySecurityType}) => string;
+  getRowClassName?: (params: {row: RealORPossibleBillsType}) => string;
 }
 
 const RowStyles = styled(Box)`
@@ -105,30 +100,39 @@ const DataGridRows: React.FC<ICustomDataGridProps> = ({
   columns,
   getRowClassName,
 }) => {
-  return rows.map((row) => {
-    const className = getRowClassName ? getRowClassName({row}) : "";
-    return (
-      <RowContentStyles key={row.auctionDate} className={className}>
-        {columns.map(({field, valueGetter}) => {
-          const content = row[field] || "";
-          const value = (
-            valueGetter ? valueGetter(content) : content
-          ) as string;
-          return (
-            <StyledCell className={className} key={field}>
-              {value}
-            </StyledCell>
-          );
-        })}
-      </RowContentStyles>
-    );
-  });
+  return (
+    <>
+      {rows.map((row: TreasurySecurityType, idx) => {
+        const className = getRowClassName ? getRowClassName({row}) : "";
+        return (
+          <RowContentStyles
+            key={`${row.auctionDate}-${idx}`}
+            className={className}
+          >
+            {columns.map(({field, valueGetter}) => {
+              const content = row[field] ?? "";
+              const value = (
+                valueGetter ? valueGetter(content) : content
+              ) as string;
+              return (
+                <StyledCell className={className} key={field}>
+                  {value}
+                </StyledCell>
+              );
+            })}
+          </RowContentStyles>
+        );
+      })}
+    </>
+  );
 };
 
 const CustomDataGrid: React.FC<{
-  rows: TreasurySecurityType[];
+  rows: RealORPossibleBillsType[];
   columns: ColumnsType;
-  getRowClassName?: (params: {row: TreasurySecurityType}) => string;
+  getRowClassName?: (params: {
+    row: PossibleBillType & TreasurySecurityType;
+  }) => string;
 }> = ({rows, columns, getRowClassName}) => {
   return (
     <>
@@ -142,17 +146,15 @@ const CustomDataGrid: React.FC<{
   );
 };
 
-const Ladder: React.FC<{billArray: RealBillsCollectionType[]}> = ({
-  billArray,
-}) => {
-  const bills = billArray.map(getUsableBillDetails);
-
+const Ladder: React.FC<{
+  billArray: RealORPossibleBillsType[];
+}> = ({billArray}) => {
   return (
     <CustomDataGrid
-      rows={bills}
+      rows={billArray}
       columns={cols}
       getRowClassName={(params) => {
-        return (params.row.classList || "")
+        return (params.row?.classList || "")
           .concat(params.row.invalid ? " unavailable" : "")
           .trim();
       }}

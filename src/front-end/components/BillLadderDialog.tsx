@@ -1,4 +1,5 @@
 import {useState} from "react";
+import {v4 as uuidV4} from "uuid";
 import {
   Box,
   Button,
@@ -13,9 +14,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import {SavedLadderPayload, RealBillsCollectionType} from "../types";
-import {getImportantDates} from "../utils";
+import {RealORPossibleBillsType} from "../../types";
+import {getImportantDates} from "../../utils";
 import dayjs, {Dayjs} from "dayjs";
+import {addToStorage} from "../../utils/localStorageManager";
 
 interface MonthDropdownProps {
   finalDate: Dayjs;
@@ -71,40 +73,41 @@ const MonthDropdown: React.FC<MonthDropdownProps> = ({finalDate}) => {
 };
 
 const BillLadderDialog: React.FC<{
-  onClose: (input: SavedLadderPayload) => void;
-  open: boolean;
-  selectedBills: RealBillsCollectionType[];
-}> = ({onClose, open, selectedBills}) => {
-  if (!selectedBills.length) return null;
-  const handleClose = (payload?: SavedLadderPayload) => {
-    onClose(payload);
-  };
-  const {firstDate, finalMaturity} = getImportantDates(selectedBills);
+  updateBillsToAdd: React.Dispatch<
+    React.SetStateAction<RealORPossibleBillsType[]>
+  >;
+  billsToAdd: RealORPossibleBillsType[];
+}> = ({updateBillsToAdd, billsToAdd}) => {
+  if (!billsToAdd.length) return null;
+
+  const {firstDate, finalMaturity} = getImportantDates(billsToAdd);
+
+  const onClose = () => updateBillsToAdd([]);
 
   return (
     <Dialog
       aria-modal="true"
-      onClose={() => handleClose()}
-      open={open}
+      onClose={onClose}
+      open={billsToAdd.length > 0}
       sx={{p: 2}}
       PaperProps={{
         component: "form",
         onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
           event.preventDefault();
           const formData = new FormData(event.currentTarget);
-          const formJson = Object.fromEntries((formData as any).entries());
-          const notes: string = formJson.notes;
-          const monthNeeded = formJson.monthNeeded;
-          const id = performance.now();
-
-          handleClose({
+          const formJson = Object.fromEntries((formData as FormData).entries());
+          const notes = formJson.notes as string;
+          const monthNeeded = formJson.monthNeeded as string;
+          const payload = {
             notes,
-            selectedBills,
-            id,
-            firstDate,
-            finalMaturity,
+            selectedBills: billsToAdd,
+            id: uuidV4(),
+            firstDate: firstDate.toISOString(),
+            finalMaturity: finalMaturity.toISOString(),
             monthNeeded,
-          });
+          };
+          addToStorage(payload);
+          onClose();
         },
       }}
     >
@@ -117,7 +120,7 @@ const BillLadderDialog: React.FC<{
       <DialogContent>
         <Stack mb={2} spacing={1}>
           <Typography>
-            {`${selectedBills.length} transaction${selectedBills.length === 1 ? "" : "s"}`}
+            {`${billsToAdd.length} transaction${billsToAdd.length === 1 ? "" : "s"}`}
           </Typography>
           <Typography>
             First Auction: <span>{firstDate.format("ddd MMM D, YYYY")}</span>
@@ -140,7 +143,7 @@ const BillLadderDialog: React.FC<{
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => handleClose()}>Cancel</Button>
+        <Button onClick={onClose}>Cancel</Button>
         <Button type="submit">Add Ladder</Button>
       </DialogActions>
     </Dialog>

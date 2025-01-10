@@ -1,9 +1,8 @@
 import React, {useState} from "react";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import EventBusyIcon from "@mui/icons-material/EventBusy";
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAdd";
 import {Typography, Accordion, IconButton, Box} from "@mui/material";
-import {SavedLadderPayload} from "../types";
+import {SavedLadderPayload} from "../../types";
 import NotesIcon from "@mui/icons-material/Notes";
 import {ExpandMore, RemoveCircle} from "@mui/icons-material";
 import Ladder from "./Ladder";
@@ -14,34 +13,34 @@ import {
   StyledContainer,
 } from "./BillLadders";
 import Notes from "./Notes";
-import {UUID} from "crypto";
+import {removeFromStorage} from "../../utils/localStorageManager";
 
 const SavedLadders: React.FC<{
-  savedLadders: SavedLadderPayload[];
-  removeLadder: (id: UUID) => void;
-}> = ({savedLadders, removeLadder}) => {
-  if (!savedLadders.length)
+  savedLadders: string;
+}> = ({savedLadders}) => {
+  if (savedLadders === "")
     return (
       <StyledContainer>
         <Typography textAlign={"center"}>No saved ladders</Typography>
       </StyledContainer>
     );
-  const [expanded, setExpanded] = useState<{[key: UUID]: boolean}>({});
-  const handleChange = (id: UUID) => () => {
+
+  const [expanded, setExpanded] = useState<{[key: string]: boolean}>({});
+
+  const handleChange = (id: string) => () => {
     setExpanded((prev) => ({
       ...prev,
       [id]: prev[id] ? false : true,
     }));
   };
-  const addToCalendar = (ladder: SavedLadderPayload) => {
-    window.electronAPI.createInvite(ladder).then((res) => {
-      // file is ready to be saved
-      console.log(res);
-    });
+
+  const addToCalendar = async (ladder: SavedLadderPayload) => {
+    await window.electronAPI.createInvite(ladder);
   };
+  const ladderList: SavedLadderPayload[] = JSON.parse(savedLadders);
   return (
     <StyledContainer>
-      {savedLadders.map((ladder) => {
+      {ladderList.map((ladder) => {
         const {
           id,
           selectedBills,
@@ -100,7 +99,7 @@ const SavedLadders: React.FC<{
                 >
                   <CalendarTodayIcon />
                 </IconButton>
-                <IconButton name="Remove" onClick={() => removeLadder(id)}>
+                <IconButton name="Remove" onClick={() => removeFromStorage(id)}>
                   <RemoveCircle color={"error"} />
                 </IconButton>
               </Box>

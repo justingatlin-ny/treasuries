@@ -1,8 +1,7 @@
 import React, {MouseEvent, ChangeEvent, useRef, useState} from "react";
 import BorderColorIcon from "@mui/icons-material/BorderColor";
 import {Button, IconButton, styled, TextField, Typography} from "@mui/material";
-import {SavedLadderPayload} from "../types";
-import {UUID} from "crypto";
+import {updateNotes} from "../../utils/localStorageManager";
 
 const StyledNotes = styled("div")`
   * {
@@ -11,7 +10,7 @@ const StyledNotes = styled("div")`
   margin: 5px 20px;
 `;
 
-const Notes: React.FC<{notes: string; id: UUID}> = ({notes, id}) => {
+const Notes: React.FC<{notes: string; id: string}> = ({notes, id}) => {
   const [isEditing, setIsEditing] = useState(false);
   const originalText = useRef(notes);
   const [text, setText] = useState(notes);
@@ -25,17 +24,7 @@ const Notes: React.FC<{notes: string; id: UUID}> = ({notes, id}) => {
     const {name} = event.currentTarget;
     const vettedText = name === "delete" ? "" : text;
 
-    const savedLadders: SavedLadderPayload[] = JSON.parse(
-      window.localStorage.getItem("savedLadders")
-    );
-
-    const updatedLadders = savedLadders.map((ladder) => {
-      if (ladder.id === id) {
-        ladder.notes = vettedText;
-      }
-      return ladder;
-    });
-    window.localStorage.setItem("savedLadders", JSON.stringify(updatedLadders));
+    updateNotes(id, vettedText);
     setText(vettedText);
     setIsEditing(false);
   };

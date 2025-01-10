@@ -1,4 +1,6 @@
-const mockPastCMB = [
+import {NativeTreasuryAssetType, RealORPossibleBillsType} from "../../types";
+
+export const mockPastCMB: NativeTreasuryAssetType[] = [
   {
     cusip: "912797ML8",
     issueDate: "2025-01-16T00:00:00",
@@ -854,7 +856,7 @@ const mockPastCMB = [
     tintCusip2DueDate: "",
   },
 ];
-const mockPastBILL = [
+export const mockPastBILL: NativeTreasuryAssetType[] = [
   {
     cusip: "912797PE1",
     issueDate: "2025-01-16T00:00:00",
@@ -1589,7 +1591,7 @@ const mockPastBILL = [
   },
 ];
 
-const mockUpcoming = [
+export const mockUpcoming = [
   {
     cusip: "912810UE6",
     issueDate: "2025-01-15T00:00:00",
@@ -2324,100 +2326,8 @@ const mockUpcoming = [
   },
 ];
 
-const mockMerged = {
-  "42-day~2025-01-14": {
-    cusip: "912797ML8",
-    issueDate: "2025-01-16",
-    maturityDate: "2025-02-27",
-    announcementDate: "2025-01-09",
-    auctionDate: "2025-01-14",
-    securityType: "Bill",
-    id: "42-day~2025-01-14",
-    maturityInDays: 42,
-    securityTerm: "42-day",
-    averageMedianDiscountRate: "",
-    closingTimeNoncompetitive: "",
-    highDiscountRate: "",
-    highInvestmentRate: "",
-    highPrice: "",
-    noncompetitiveTendersAccepted: "",
-    pricePer100: "",
-    securityTermDayMonth: "42-Day",
-    securityTermWeekYear: "0-Week",
-    type: "CMB",
-    updatedTimestamp: "2025-01-03T10:32:34",
-    classList: "",
-  },
-  "26-week~2025-01-13": {
-    cusip: "912797PE1",
-    issueDate: "2025-01-16",
-    maturityDate: "2025-07-17",
-    announcementDate: "2025-01-09",
-    auctionDate: "2025-01-13",
-    securityType: "Bill",
-    id: "26-week~2025-01-13",
-    maturityInDays: 182,
-    securityTerm: "26-week",
-    averageMedianDiscountRate: "",
-    closingTimeNoncompetitive: "",
-    highDiscountRate: "",
-    highInvestmentRate: "",
-    highPrice: "",
-    noncompetitiveTendersAccepted: "",
-    pricePer100: "",
-    securityTermDayMonth: "182-Day",
-    securityTermWeekYear: "26-Week",
-    type: "Bill",
-    updatedTimestamp: "2025-01-03T10:32:12",
-    classList: "",
-  },
-  "13-week~2025-01-13": {
-    cusip: "912797KS5",
-    issueDate: "2025-01-16",
-    maturityDate: "2025-04-17",
-    announcementDate: "2025-01-09",
-    auctionDate: "2025-01-13",
-    securityType: "Bill",
-    id: "13-week~2025-01-13",
-    maturityInDays: 91,
-    securityTerm: "13-week",
-    averageMedianDiscountRate: "",
-    closingTimeNoncompetitive: "",
-    highDiscountRate: "",
-    highInvestmentRate: "",
-    highPrice: "",
-    noncompetitiveTendersAccepted: "",
-    pricePer100: "",
-    securityTermDayMonth: "91-Day",
-    securityTermWeekYear: "13-Week",
-    type: "Bill",
-    updatedTimestamp: "2025-01-03T10:32:14",
-    classList: "",
-  },
-  "8-week~2025-01-09": {
-    cusip: "912797NQ6",
-    issueDate: "2025-01-14",
-    maturityDate: "2025-03-11",
-    announcementDate: "2025-01-07",
-    auctionDate: "2025-01-09",
-    securityType: "Bill",
-    id: "8-week~2025-01-09",
-    maturityInDays: 56,
-    securityTerm: "8-week",
-    averageMedianDiscountRate: "",
-    closingTimeNoncompetitive: "11:00 AM",
-    highDiscountRate: "",
-    highInvestmentRate: "",
-    highPrice: "",
-    noncompetitiveTendersAccepted: "Yes",
-    pricePer100: "",
-    securityTermDayMonth: "56-Day",
-    securityTermWeekYear: "8-Week",
-    type: "Bill",
-    updatedTimestamp: "2025-01-07T11:02:10",
-    classList: "is-close",
-  },
-  "4-week~2025-01-09": {
+export const mockMerged2: RealORPossibleBillsType[] = [
+  {
     cusip: "912797NG8",
     issueDate: "2025-01-14",
     maturityDate: "2025-02-11",
@@ -2440,56 +2350,7 @@ const mockMerged = {
     updatedTimestamp: "2025-01-07T11:02:07",
     classList: "is-close",
   },
-  "17-week~2025-01-08": {
-    cusip: "912797PH4",
-    issueDate: "2025-01-14",
-    maturityDate: "2025-05-13",
-    announcementDate: "2025-01-07",
-    auctionDate: "2025-01-08",
-    securityType: "Bill",
-    id: "17-week~2025-01-08",
-    maturityInDays: 119,
-    securityTerm: "17-week",
-    averageMedianDiscountRate: "4.175000",
-    closingTimeNoncompetitive: "11:00 AM",
-    highDiscountRate: "4.190000",
-    highInvestmentRate: "4.308000",
-    highPrice: "98.614972",
-    noncompetitiveTendersAccepted: "Yes",
-    pricePer100: "98.614972",
-    securityTermDayMonth: "119-Day",
-    securityTermWeekYear: "17-Week",
-    type: "Bill",
-    updatedTimestamp: "2025-01-08T11:34:14",
-    classList: "is-close is-today auction-passed passed-brokerage-deadline",
-  },
-};
-
-const mockMerged2 = {
-  "4-week~2025-01-09": {
-    cusip: "912797NG8",
-    issueDate: "2025-01-14",
-    maturityDate: "2025-02-11",
-    announcementDate: "2025-01-07",
-    auctionDate: "2025-01-09",
-    securityType: "Bill",
-    id: "4-week~2025-01-09",
-    maturityInDays: 28,
-    securityTerm: "4-week",
-    averageMedianDiscountRate: "",
-    closingTimeNoncompetitive: "11:00 AM",
-    highDiscountRate: "",
-    highInvestmentRate: "",
-    highPrice: "",
-    noncompetitiveTendersAccepted: "Yes",
-    pricePer100: "",
-    securityTermDayMonth: "28-Day",
-    securityTermWeekYear: "4-Week",
-    type: "Bill",
-    updatedTimestamp: "2025-01-07T11:02:07",
-    classList: "is-close",
-  },
-  "8-week~2025-01-09": {
+  {
     cusip: "912797NQ6",
     issueDate: "2025-01-14",
     maturityDate: "2025-03-11",
@@ -2512,7 +2373,7 @@ const mockMerged2 = {
     updatedTimestamp: "2025-01-07T11:02:10",
     classList: "is-close",
   },
-  "13-week~2025-01-13": {
+  {
     cusip: "912797KS5",
     issueDate: "2025-01-16",
     maturityDate: "2025-04-17",
@@ -2535,7 +2396,7 @@ const mockMerged2 = {
     updatedTimestamp: "2025-01-03T10:32:14",
     classList: "",
   },
-  "26-week~2025-01-13": {
+  {
     cusip: "912797PE1",
     issueDate: "2025-01-16",
     maturityDate: "2025-07-17",
@@ -2558,7 +2419,7 @@ const mockMerged2 = {
     updatedTimestamp: "2025-01-03T10:32:12",
     classList: "",
   },
-  "42-day~2025-01-14": {
+  {
     cusip: "912797ML8",
     issueDate: "2025-01-16",
     maturityDate: "2025-02-27",
@@ -2581,9 +2442,9 @@ const mockMerged2 = {
     updatedTimestamp: "2025-01-03T10:32:34",
     classList: "",
   },
-};
+];
 
-const rejectedArray = [
+export const rejectedArray = [
   {
     reason: "promise rejected",
     timestamp: "2025-01-08T21:50:13.786Z",
@@ -2595,11 +2456,76 @@ const rejectedArray = [
   },
 ];
 
-export {
-  mockPastBILL,
-  mockPastCMB,
-  mockUpcoming,
-  mockMerged,
-  mockMerged2,
-  rejectedArray,
-};
+export const mockBillLadder = [
+  [
+    {
+      cusip: "912797NQ6",
+      issueDate: "2025-01-14",
+      maturityDate: "2025-03-11",
+      announcementDate: "2025-01-07",
+      auctionDate: "2025-01-09",
+      securityType: "Bill",
+      id: "8-week~2025-01-09",
+      maturityInDays: 56,
+      securityTerm: "8-week",
+      averageMedianDiscountRate: "",
+      closingTimeNoncompetitive: "11:00 AM",
+      highDiscountRate: "",
+      highInvestmentRate: "",
+      highPrice: "",
+      noncompetitiveTendersAccepted: "Yes",
+      pricePer100: "",
+      securityTermDayMonth: "56-Day",
+      securityTermWeekYear: "8-Week",
+      type: "Bill",
+      updatedTimestamp: "2025-01-07T11:02:10",
+      classList: "is-close",
+      invalid: false,
+    },
+  ],
+  [
+    {
+      cusip: "912797ML8",
+      issueDate: "2025-01-16",
+      maturityDate: "2025-02-27",
+      announcementDate: "2025-01-09",
+      auctionDate: "2025-01-14",
+      securityType: "Bill",
+      id: "42-day~2025-01-14",
+      maturityInDays: 42,
+      securityTerm: "42-day",
+      averageMedianDiscountRate: "",
+      closingTimeNoncompetitive: "",
+      highDiscountRate: "",
+      highInvestmentRate: "",
+      highPrice: "",
+      noncompetitiveTendersAccepted: "",
+      pricePer100: "",
+      securityTermDayMonth: "42-Day",
+      securityTermWeekYear: "0-Week",
+      type: "CMB",
+      updatedTimestamp: "2025-01-03T10:32:34",
+      classList: "",
+      invalid: false,
+    },
+  ],
+  [
+    {
+      maturityDate: "2025-02-11",
+      id: "4-week~2025-01-09",
+      issueDate: "2025-01-14",
+      auctionDate: "2025-01-09",
+      securityTerm: "4-week",
+      maturityInDays: 28,
+      invalid: true,
+    },
+    {
+      maturityDate: "2025-03-27",
+      id: "42-day~2025-02-11",
+      issueDate: "2025-02-13",
+      auctionDate: "2025-02-11",
+      securityTerm: "42-day",
+      maturityInDays: 42,
+    },
+  ],
+];

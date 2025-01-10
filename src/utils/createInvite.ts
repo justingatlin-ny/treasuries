@@ -1,8 +1,9 @@
-import fs from "fs";
 import dayjs from "dayjs";
-import {SavedLadderPayload, TreasurySecurityType} from "../types";
-import path from "path";
-import {shell} from "electron";
+import {
+  PossibleBillType,
+  SavedLadderPayload,
+  TreasurySecurityType,
+} from "../types";
 
 const timezoneBlock = [
   "BEGIN:VTIMEZONE",
@@ -44,15 +45,13 @@ const getAlarms = () => {
 
 const dynamicEvents = (ladder: SavedLadderPayload) => {
   const {id, selectedBills, notes} = ladder;
+  const numOfBills = selectedBills.length;
+  const auctionDatesList = selectedBills.map((bill) => bill.auctionDate);
+
   return selectedBills.reduce((acc, bill, idx) => {
-    const auctionDatesList = selectedBills.map((bill) => {
-      const [, {auctionDate, maturityDate, cusip}] = Object.entries(bill)[0];
-      return {auctionDate, maturityDate, cusip};
-    });
-    const [, data] = Object.entries(bill)[0];
     const {auctionDate, securityTerm, closingTimeNoncompetitive, cusip, type} =
-      data as unknown as TreasurySecurityType;
-    const numOfBills = selectedBills.length;
+      bill as TreasurySecurityType;
+
     const billNum = idx + 1;
 
     const getDescription = () => {
@@ -62,8 +61,8 @@ const dynamicEvents = (ladder: SavedLadderPayload) => {
       } else {
         const auctionDatesString = auctionDatesList
           .map(
-            (info, num) =>
-              `#${num + 1}: ${dayjs(info.auctionDate).format("ddd MMM D, YYYY")}`
+            (date, num) =>
+              `#${num + 1}: ${dayjs(date).format("ddd MMM D, YYYY")}`
           )
           .join("\\n");
 

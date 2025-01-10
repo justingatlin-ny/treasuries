@@ -1,7 +1,7 @@
 import {Grid2, Typography} from "@mui/material";
 import {LocalizationProvider, DateCalendar} from "@mui/x-date-pickers";
 import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
-import {BondControlProps} from "../types";
+import {BondControlProps} from "../../types";
 import dayjs from "dayjs";
 
 export const BondControls: React.FC<BondControlProps> = ({

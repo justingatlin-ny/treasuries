@@ -1,7 +1,7 @@
 import {Grid2, styled, Typography} from "@mui/material";
 import {type FC} from "react";
-import {determineStatus, humanReadableDate} from "../utils";
-import {TreasurySecurityType} from "../types";
+import {determineStatus, humanReadableDate} from "../../utils";
+import {TreasurySecurityType} from "../../types";
 
 export const BillContainer = styled(Grid2)``;
 
@@ -10,10 +10,7 @@ const Bill: FC<{securityDetails: TreasurySecurityType}> = ({
 }) => {
   return (
     <>
-      <Grid2
-        size={4}
-        className={securityDetails.unavailable ? "unavailable" : ""}
-      >
+      <Grid2 size={4} className={securityDetails.invalid ? "unavailable" : ""}>
         <Typography>
           {securityDetails.securityTerm} {securityDetails?.cusip || ""}
         </Typography>
