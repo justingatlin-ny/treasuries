@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import Grid2 from "@mui/material/Grid2";
 import dayjs, {Dayjs} from "dayjs";
 import {ILocalStorageData, RealORPossibleBillsType} from "../../types";
-import {BondControls} from "./BondControls";
+import BondDates from "./BondDates";
 import {buildBillLadders} from "../../utils";
 import BillLadders from "./BillLadders";
 import BillLadderDialog from "./BillLadderDialog";
@@ -82,7 +82,7 @@ const Main = () => {
   return (
     <Grid2 container spacing={2} sx={{p: 2}} direction={"column"}>
       <SavedLadders savedLadders={savedLadders} />
-      <BondControls
+      <BondDates
         handleChange={handleDateChange}
         maturityDate={maturityDate}
         auctionDate={auctionDate}

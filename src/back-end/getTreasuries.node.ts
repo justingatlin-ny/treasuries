@@ -5,7 +5,7 @@ import {
   mockUpcoming,
 } from "../mocks/mockTreasuries";
 import {mockNativeTreasuriesMerged} from "../mocks/mockMerged";
-import {getTreasuries} from "../back-end/getTreasuries";
+import {getTreasuries} from "./getTreasuries";
 
 describe("getTreasuries()", () => {
   afterEach(jest.resetAllMocks);

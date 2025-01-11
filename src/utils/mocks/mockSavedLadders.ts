@@ -1,4 +1,4 @@
-import {RealORPossibleBillsType, SavedLadderPayload} from "../types";
+import {RealORPossibleBillsType, SavedLadderPayload} from "../../types";
 
 export const selectedBills: RealORPossibleBillsType[] = [
   {

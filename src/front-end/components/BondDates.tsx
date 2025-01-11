@@ -4,7 +4,7 @@ import {AdapterDayjs} from "@mui/x-date-pickers/AdapterDayjs";
 import {BondControlProps} from "../../types";
 import dayjs from "dayjs";
 
-export const BondControls: React.FC<BondControlProps> = ({
+const BondDates: React.FC<BondControlProps> = ({
   maturityDate,
   auctionDate,
   handleChange,
@@ -33,3 +33,5 @@ export const BondControls: React.FC<BondControlProps> = ({
     </LocalizationProvider>
   );
 };
+
+export default BondDates;
