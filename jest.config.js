@@ -4,7 +4,7 @@ module.exports = {
       displayName: "node",
       testEnvironment: "node",
       testMatch: [
-        "<rootDir>/**/*.node.{js,jsx,ts,tsx}",
+        "<rootDir>/**/*.spec.{js,jsx,ts,tsx}",
       ],
       preset: "ts-jest",
       transform: {
@@ -23,12 +23,11 @@ module.exports = {
       },
     },
   ],
-
-
-  collectCoverage: true,
+  collectCoverage: false,
   collectCoverageFrom: [
     "src/**/*.{js,jsx,ts,tsx}",
     "!src/**/*.d.ts", // Exclude type definition files
     "!src/**/(mocks|types|styles)/**/*",
+    "!src/**/*.{spec,test}.{js,jsx,ts,tsx}",
   ],
 };

@@ -1,11 +1,13 @@
 import dayjs from "dayjs";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import {SavedLadderPayload, TreasurySecurityType} from "../types";
+
+dayjs.extend(isSameOrAfter);
 
 export const SAVED_LADDERS = "savedLadders";
 export const ON_SAVED_LADDERS_CHANGED = "onSavedLaddersChanged";
 
 const updateStorage = (newValue: SavedLadderPayload[]) => {
-  if (!window?.localStorage) throw new Error("No window object");
   window.localStorage.setItem(SAVED_LADDERS, JSON.stringify(newValue));
 };
 
@@ -34,7 +36,7 @@ export const updateNotes = (id: string, newText: string) => {
 };
 
 export const getSavedLaddersFromStorage = (): SavedLadderPayload[] => {
-  if (!window?.localStorage) throw new Error("No window object");
+  if (!window) throw new Error("No window object");
   const ladders = window.localStorage.getItem(SAVED_LADDERS) || "[]";
   return JSON.parse(ladders);
 };
@@ -42,14 +44,11 @@ export const getSavedLaddersFromStorage = (): SavedLadderPayload[] => {
 const validateSavedBillsAndUpdateStorage = (
   realTreasuryBills: TreasurySecurityType[]
 ) => {
-  const daysInFuture = dayjs().add(10, "days");
+  const viabilityCutoffDate = dayjs().add(10, "days");
 
   const viableTreasuries = realTreasuryBills.filter((data) => {
     const auctionDate = dayjs(data.auctionDate);
-    return (
-      daysInFuture.isAfter(auctionDate, "date") ||
-      daysInFuture.isSame(auctionDate, "date")
-    );
+    return viabilityCutoffDate.isSameOrAfter(auctionDate, "date");
   });
   const previousLadders = getSavedLaddersFromStorage();
 

@@ -67,7 +67,7 @@ const Notes: React.FC<{notes: string; id: string}> = ({notes, id}) => {
         <Typography>{`${text}`}</Typography>
       )}
       {!isEditing && (
-        <IconButton onClick={handleEditClick}>
+        <IconButton data-testid="edit" onClick={handleEditClick}>
           <BorderColorIcon />
         </IconButton>
       )}

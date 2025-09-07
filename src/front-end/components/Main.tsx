@@ -1,9 +1,9 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import Grid2 from "@mui/material/Grid2";
-import dayjs, {Dayjs} from "dayjs";
-import {ILocalStorageData, RealORPossibleBillsType} from "../../types";
+import dayjs, { Dayjs } from "dayjs";
+import { ILocalStorageData, RealORPossibleBillsType } from "../../types";
 import BondDates from "./BondDates";
-import {buildBillLadders} from "../../utils";
+import { buildBillLadders } from "../../utils/buildBillLadders";
 import BillLadders from "./BillLadders";
 import BillLadderDialog from "./BillLadderDialog";
 import SavedLadders from "./SavedLadders";
@@ -36,7 +36,7 @@ const Main = () => {
     newValue: string
   ) {
     const event = new CustomEvent<ILocalStorageData>(ON_SAVED_LADDERS_CHANGED, {
-      detail: {key, oldValue, newValue},
+      detail: { key, oldValue, newValue },
     });
     window.dispatchEvent(event);
   }
@@ -55,7 +55,7 @@ const Main = () => {
       ON_SAVED_LADDERS_CHANGED,
       (event: CustomEvent<ILocalStorageData>) => {
         const {
-          detail: {newValue},
+          detail: { newValue },
         } = event;
         updateSavedLadders(newValue);
       }
@@ -66,6 +66,7 @@ const Main = () => {
     if (maturityDate) {
       if (window?.electronAPI?.getBills) {
         window.electronAPI.getBills().then((realBills) => {
+          console.log(realBills);
           validateSavedBillsAndUpdateStorage(realBills);
 
           const ladders = buildBillLadders(
@@ -80,7 +81,7 @@ const Main = () => {
   }, [maturityDate, auctionDate]);
 
   return (
-    <Grid2 container spacing={2} sx={{p: 2}} direction={"column"}>
+    <Grid2 container spacing={2} sx={{ p: 2 }} direction={"column"}>
       <SavedLadders savedLadders={savedLadders} />
       <BondDates
         handleChange={handleDateChange}
